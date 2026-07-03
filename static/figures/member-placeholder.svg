@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title desc">
+  <title id="title">Member photo placeholder</title>
+  <desc id="desc">Neutral placeholder image for a lab member.</desc>
+  <rect width="320" height="320" rx="36" fill="#eee8d5"/>
+  <circle cx="160" cy="126" r="58" fill="#93a1a1"/>
+  <path d="M70 284c10-60 45-92 90-92s80 32 90 92z" fill="#586e75"/>
+  <path d="M56 56h208v208H56z" fill="none" stroke="#268bd2" stroke-width="10"/>
+</svg>

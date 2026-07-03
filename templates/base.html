@@ -1,0 +1,90 @@
+{% from 'bootstrap5/nav.html' import render_nav_item %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if page_title %}{{ page_title }} | {{ site_title }}{% else %}{{ site_title }}{% endif %}</title>
+    <meta name="description" content="{{ site_description }}">
+    <meta property="og:title" content="{% if page_title %}{{ page_title }} | {{ site_title }}{% else %}{{ site_title }}{% endif %}">
+    <meta property="og:description" content="{{ site_description }}">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="{{ url_for('static', filename='figures/oasis-logo.svg', _external=True) }}">
+    <meta name="twitter:card" content="summary">
+    <link rel="canonical" href="{{ request.url }}">
+    {% block styles %}
+    {{ bootstrap.load_css() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='figures/favicon.ico') }}">
+    {% endblock %}
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='figures/oasis-logo.svg') }}" alt="" width="30" height="30">
+                <span>{{ navbar_title }}</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {{ render_nav_item('home', 'Home') }}
+                    {{ render_nav_item('people', 'People') }}
+                    {{ render_nav_item('publication', 'Publications') }}
+                </ul>
+                <button id="theme-toggle" type="button" class="btn btn-sm btn-outline-light ms-lg-auto">Dark Mode</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="site-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer border-top">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2 py-3">
+            <span class="text-muted">&copy; {{ copyright_year }} {{ copyright_text }}</span>
+            <span class="text-muted">Operating And Storage Infrastructure System</span>
+        </div>
+    </footer>
+
+    {% block scripts %}
+    {{ bootstrap.load_js() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const body = document.body;
+            const themeToggle = document.getElementById('theme-toggle');
+            const storedTheme = localStorage.getItem('theme');
+
+            function setTheme(theme) {
+                if (theme === 'dark-theme') {
+                    body.classList.add('dark-theme');
+                    themeToggle.textContent = 'Light Mode';
+                    localStorage.setItem('theme', 'dark-theme');
+                } else {
+                    body.classList.remove('dark-theme');
+                    themeToggle.textContent = 'Dark Mode';
+                    localStorage.setItem('theme', 'light-theme');
+                }
+            }
+
+            if (storedTheme) {
+                setTheme(storedTheme);
+            } else {
+                const hour = new Date().getHours();
+                setTheme(hour >= 19 || hour < 6 ? 'dark-theme' : 'light-theme');
+            }
+
+            themeToggle.addEventListener('click', function () {
+                setTheme(body.classList.contains('dark-theme') ? 'light-theme' : 'dark-theme');
+            });
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>

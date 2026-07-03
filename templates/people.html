@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <p class="section-eyebrow">People</p>
+        <h1>Members of Oasis Lab</h1>
+        <p>
+            Member information and copyable example rows are stored in <code>data/people.csv</code>.
+            For current students, the workplace field can show internship information such as
+            <code>Alibaba (Intern)</code>. For alumni, use the workplace field for the current employer.
+        </p>
+    </div>
+</section>
+
+<section class="section-block">
+    <div class="container">
+        {% for group, members in people.items() %}
+        <div class="people-group">
+            <h2>{{ group }}</h2>
+            <div class="people-grid">
+                {% for member in members %}
+                <article class="person-card">
+                    <img src="{{ url_for('static', filename=member.photo or 'figures/member-placeholder.svg') }}" alt="Photo of {{ member.name }}" loading="lazy">
+                    <div>
+                        <h3>{{ member.name }}{% if member.workplace %} <span class="person-workplace">@ {{ member.workplace }}</span>{% endif %}</h3>
+                        <p class="person-role">{{ member.role }}</p>
+                        <p>{{ member.interests }}</p>
+                        <div class="person-links">
+                            {% if member.email %}<span class="blur-text">{{ member.email }}</span>{% endif %}
+                            {% if member.website %}<a href="{{ member.website }}" target="_blank" rel="noopener noreferrer">Website</a>{% endif %}
+                            {% if member.scholar %}<a href="{{ member.scholar }}" target="_blank" rel="noopener noreferrer">Scholar</a>{% endif %}
+                            {% if member.github %}<a href="{{ member.github }}" target="_blank" rel="noopener noreferrer">GitHub</a>{% endif %}
+                        </div>
+                        {% if member.publication_summary %}
+                        <div class="person-publication-summary">
+                            {% for item in member.publication_summary %}
+                            <span>{{ item.conference }} x{{ item.count }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <button class="btn btn-sm btn-outline-primary person-publication-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#{{ member.collapse_id }}" aria-expanded="false" aria-controls="{{ member.collapse_id }}">
+                            <span>Oasis Publications{% if member.publications %} ({{ member.publications|length }}){% endif %}</span>
+                            <i class="fas fa-chevron-down publication-toggle-icon" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="collapse person-publications" id="{{ member.collapse_id }}">
+                        {% if member.publications %}
+                        <ol class="person-publication-list">
+                            {% for publication in member.publications %}
+                            <li data-shortconf="{{ publication.shortconf or '' }}">
+                                <strong>{{ publication.title }}</strong>
+                                {% if publication.award %}
+                                    <span class="badge bg-danger ms-2">{{ publication.award }}</span>
+                                {% endif %}
+                                <br>
+                                <span class="text-muted">by</span>
+                                {% for author in publication.author_entries %}
+                                    {% if author.is_oasis_member %}
+                                        <strong class="oasis-author">{{ author.display }}</strong>
+                                    {% else %}
+                                        {{ author.display }}
+                                    {% endif %}
+                                    {% if author.is_co_first %}<span class="co-first">*</span>{% endif %}
+                                    {% if author.is_corresponding %}<span class="corresponding">#</span>{% endif %}
+                                    {% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                                <br>
+                                <em>{{ publication.shortconf }}</em>
+                                {% if publication.conference %}<span class="text-muted"> - {{ publication.conference }}</span>{% endif %}
+                                <br>
+                                <span class="publication-links">
+                                    {% if publication.url_page %}
+                                        <a href="{{ publication.url_page }}" class="btn btn-sm btn-outline-dark me-1 mt-1" target="_blank" rel="noopener noreferrer">Page</a>
+                                    {% endif %}
+                                    {% if publication.url_pdf %}
+                                        <a href="{{ publication.url_pdf }}" class="btn btn-sm btn-outline-primary me-1 mt-1" target="_blank" rel="noopener noreferrer">PDF</a>
+                                    {% endif %}
+                                    {% if publication.url_video %}
+                                        <a href="{{ publication.url_video }}" class="btn btn-sm btn-outline-secondary me-1 mt-1" target="_blank" rel="noopener noreferrer">Video</a>
+                                    {% endif %}
+                                    {% if publication.url_slides %}
+                                        <a href="{{ publication.url_slides }}" class="btn btn-sm btn-outline-success me-1 mt-1" target="_blank" rel="noopener noreferrer">Slides</a>
+                                    {% endif %}
+                                    {% if publication.url_code %}
+                                        <a href="{{ publication.url_code }}" class="btn btn-sm btn-outline-warning me-1 mt-1" target="_blank" rel="noopener noreferrer">Code</a>
+                                    {% endif %}
+                                    {% if publication.url_dataset %}
+                                        <a href="{{ publication.url_dataset }}" class="btn btn-sm btn-outline-info me-1 mt-1" target="_blank" rel="noopener noreferrer">Dataset</a>
+                                    {% endif %}
+                                </span>
+                            </li>
+                            {% endfor %}
+                        </ol>
+                        {% else %}
+                        <p class="text-muted mb-0">No Oasis publications yet.</p>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

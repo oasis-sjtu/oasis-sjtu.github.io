@@ -1,0 +1,4 @@
+Bootstrap_Flask==2.4.0
+Flask==3.0.3
+Frozen_Flask==1.0.2
+MarkupSafe==2.1.5

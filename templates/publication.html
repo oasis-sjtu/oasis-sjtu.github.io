@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <p class="section-eyebrow">Publications</p>
+        <h1>Selected papers</h1>
+        <p>
+            Publications are copied from the existing personal-site CSV and can be updated in
+            <code>static/publications.csv</code>.
+        </p>
+    </div>
+</section>
+
+<section class="section-block">
+    <div class="container">
+        <div id="conference-filter" class="mb-4 p-3 border rounded">
+            <div id="filter-buttons" class="d-flex flex-wrap gap-2"></div>
+        </div>
+
+        <p class="text-muted mb-4">
+            <span class="co-first">*</span> Co-first author &nbsp;&nbsp;
+            <span class="corresponding">#</span> Corresponding author &nbsp;&nbsp;
+            <span class="oasis-author">Oasis Lab member</span>
+        </p>
+
+        {% if publications %}
+            {% set current_year = namespace(value='') %}
+            {% for publication in publications %}
+                {% set pub_year = publication.year|string|truncate(4, True, '')|int %}
+
+                {% if current_year.value != pub_year %}
+                    {% if not loop.first %}
+                            </ol>
+                        </section>
+                    {% endif %}
+                    {% set current_year.value = pub_year %}
+                    <section class="publication-year mb-5" data-year="{{ pub_year }}">
+                        <h2 class="year-header mb-3">{{ pub_year }}</h2>
+                        <ol class="publication-list-global" start="{{ loop.index }}">
+                {% endif %}
+                            <li class="publication-item" data-shortconf="{{ publication.shortconf or '' }}">
+                                <strong>{{ publication.title }}</strong>
+                                {% if publication.award %}
+                                    <span class="badge bg-danger ms-2">{{ publication.award }}</span>
+                                {% endif %}
+                                <br>
+                                <span class="text-muted">by</span>
+                                {% for author in publication.author_entries %}
+                                    {% if author.is_oasis_member %}
+                                        <strong class="oasis-author">{{ author.display }}</strong>
+                                    {% else %}
+                                        {{ author.display }}
+                                    {% endif %}
+                                    {% if author.is_co_first %}<span class="co-first">*</span>{% endif %}
+                                    {% if author.is_corresponding %}<span class="corresponding">#</span>{% endif %}
+                                    {% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                                <br>
+                                <em>{{ publication.conference }}</em>, {{ publication.shortconf }}.
+                                <br>
+                                <span class="publication-links">
+                                    {% if publication.url_page %}
+                                        <a href="{{ publication.url_page }}" class="btn btn-sm btn-outline-dark me-1 mt-1" target="_blank" rel="noopener noreferrer">Page</a>
+                                    {% endif %}
+                                    {% if publication.url_pdf %}
+                                        <a href="{{ publication.url_pdf }}" class="btn btn-sm btn-outline-primary me-1 mt-1" target="_blank" rel="noopener noreferrer">PDF</a>
+                                    {% endif %}
+                                    {% if publication.url_video %}
+                                        <a href="{{ publication.url_video }}" class="btn btn-sm btn-outline-secondary me-1 mt-1" target="_blank" rel="noopener noreferrer">Video</a>
+                                    {% endif %}
+                                    {% if publication.url_slides %}
+                                        <a href="{{ publication.url_slides }}" class="btn btn-sm btn-outline-success me-1 mt-1" target="_blank" rel="noopener noreferrer">Slides</a>
+                                    {% endif %}
+                                    {% if publication.url_code %}
+                                        <a href="{{ publication.url_code }}" class="btn btn-sm btn-outline-warning me-1 mt-1" target="_blank" rel="noopener noreferrer">Code</a>
+                                    {% endif %}
+                                    {% if publication.url_dataset %}
+                                        <a href="{{ publication.url_dataset }}" class="btn btn-sm btn-outline-info me-1 mt-1" target="_blank" rel="noopener noreferrer">Dataset</a>
+                                    {% endif %}
+                                </span>
+                            </li>
+                {% if loop.last %}
+                        </ol>
+                    </section>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>No publications found.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+let conferenceFilters = {};
+let conferenceCounts = {};
+
+function extractConferenceName(confString) {
+    const match = confString.match(/([A-Z][A-Za-z-]*)'?\d*/);
+    return match ? match[1] : null;
+}
+
+function initializeConferenceFilter() {
+    const publications = document.querySelectorAll('.publication-list-global li');
+
+    publications.forEach((pub) => {
+        const confName = extractConferenceName(pub.dataset.shortconf || '');
+        if (!confName) {
+            return;
+        }
+
+        pub.dataset.conference = confName;
+
+        if (!conferenceCounts[confName]) {
+            conferenceCounts[confName] = 0;
+            conferenceFilters[confName] = true;
+        }
+
+        conferenceCounts[confName] += 1;
+    });
+
+    const sortedConferences = Object.entries(conferenceCounts).sort((a, b) => b[1] - a[1]);
+    const filterContainer = document.getElementById('filter-buttons');
+    filterContainer.innerHTML = '';
+
+    sortedConferences.forEach(([conf, count]) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-sm conf-filter-btn active';
+        btn.type = 'button';
+        btn.textContent = `${conf} x ${count}`;
+        btn.dataset.conference = conf;
+        btn.addEventListener('click', () => toggleConference(conf));
+        filterContainer.appendChild(btn);
+    });
+
+    const showAllBtn = document.createElement('button');
+    showAllBtn.className = 'btn btn-sm btn-outline-primary';
+    showAllBtn.type = 'button';
+    showAllBtn.textContent = 'Show All';
+    showAllBtn.addEventListener('click', showAll);
+    filterContainer.appendChild(showAllBtn);
+
+    updatePublicationVisibility();
+}
+
+function toggleConference(conf) {
+    const isOnlyActive = conferenceFilters[conf] === true &&
+        Object.values(conferenceFilters).filter(Boolean).length === 1;
+
+    if (isOnlyActive) {
+        Object.keys(conferenceFilters).forEach(key => conferenceFilters[key] = true);
+    } else {
+        Object.keys(conferenceFilters).forEach(key => conferenceFilters[key] = key === conf);
+    }
+
+    updatePublicationVisibility();
+}
+
+function showAll() {
+    Object.keys(conferenceFilters).forEach(conf => conferenceFilters[conf] = true);
+    updatePublicationVisibility();
+}
+
+function updatePublicationVisibility() {
+    document.querySelectorAll('.publication-list-global li').forEach((pub) => {
+        const conf = pub.dataset.conference;
+        const isVisible = !conf || conferenceFilters[conf];
+        pub.classList.toggle('publication-hidden', !isVisible);
+    });
+
+    document.querySelectorAll('.conf-filter-btn').forEach((btn) => {
+        btn.classList.toggle('active', conferenceFilters[btn.dataset.conference]);
+    });
+
+    document.querySelectorAll('.publication-year').forEach((section) => {
+        const visiblePublications = section.querySelectorAll('li:not(.publication-hidden)');
+        section.classList.toggle('publication-hidden', visiblePublications.length === 0);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initializeConferenceFilter);
+</script>
+{% endblock %}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" role="img" aria-labelledby="title">
+  <title id="title">Kuaishou</title>
+  <rect width="360" height="120" fill="#fff"/>
+  <rect x="55" y="36" width="46" height="46" rx="12" fill="#ff4906"/>
+  <circle cx="70" cy="51" r="7" fill="#fff"/>
+  <circle cx="86" cy="51" r="7" fill="#fff"/>
+  <text x="124" y="72" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700" fill="#262626">Kuaishou</text>
+</svg>

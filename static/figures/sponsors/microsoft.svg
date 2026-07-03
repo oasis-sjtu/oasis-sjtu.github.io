@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" role="img" aria-labelledby="title">
+  <title id="title">Microsoft</title>
+  <rect width="360" height="120" fill="#fff"/>
+  <rect x="46" y="36" width="22" height="22" fill="#f25022"/>
+  <rect x="72" y="36" width="22" height="22" fill="#7fba00"/>
+  <rect x="46" y="62" width="22" height="22" fill="#00a4ef"/>
+  <rect x="72" y="62" width="22" height="22" fill="#ffb900"/>
+  <text x="116" y="73" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#5e5e5e">Microsoft</text>
+</svg>

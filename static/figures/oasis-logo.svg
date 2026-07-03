@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+  <title id="title">Oasis Lab logo placeholder</title>
+  <desc id="desc">Circular placeholder logo for Oasis Lab.</desc>
+  <rect width="240" height="240" rx="48" fill="#fdf6e3"/>
+  <circle cx="120" cy="120" r="82" fill="#eee8d5" stroke="#268bd2" stroke-width="10"/>
+  <path d="M54 130c32-40 62-58 93-52 22 4 36 18 39 42-18-18-38-25-60-19-23 6-46 22-72 49z" fill="#859900"/>
+  <path d="M70 150c26-22 52-32 78-29 18 2 32 10 42 25-21-7-42-7-62 0-20 6-39 17-58 32z" fill="#268bd2"/>
+  <text x="120" y="204" text-anchor="middle" font-family="Roboto, Arial, sans-serif" font-size="30" font-weight="700" fill="#586e75">OASIS</text>
+</svg>

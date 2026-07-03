@@ -1,0 +1,36 @@
+name: Deploy Flask App to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master  # Set this to your default branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'  # Set to your required Python version
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ./requirements.txt
+
+      - name: Generate Static Files
+        run: |
+          python freeze.py
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          deploy_key: ${{ secrets.PRIVATE_KEY }}
+          external_repository: giorgioercixu/oasislab.github.io
+          publish_branch: master
+          publish_dir: ./build  

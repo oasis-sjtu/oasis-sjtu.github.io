@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <p class="section-eyebrow mb-2">Shanghai Jiao Tong University</p>
+                <h1 class="hero-title">Oasis Lab</h1>
+                <p class="hero-subtitle">
+                    Operating And Storage Infrastructure System research for cloud, storage,
+                    reliability, and AI infrastructure.
+                </p>
+                <p class="hero-copy">
+                    We study how modern infrastructure behaves at scale and build systems that make it
+                    faster, more reliable, and easier to operate. Our work spans cloud storage systems,
+                    operating systems infrastructure, observability, and systems support for AI workloads.
+                </p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary btn-lg" href="{{ url_for('people') }}">People</a>
+                    <a class="btn btn-outline-primary btn-lg" href="{{ url_for('publication') }}">Publications</a>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="lab-mark" aria-hidden="true">
+                    <img src="{{ url_for('static', filename='figures/oasis-logo.svg') }}" alt="">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-block" id="research">
+    <div class="container">
+        <div class="section-heading">
+            <p class="section-eyebrow">Research</p>
+            <h2>What we work on</h2>
+        </div>
+        <div class="research-grid">
+            {% for area in research_areas %}
+            <article class="research-item">
+                <h3>{{ area.title }}</h3>
+                <p>{{ area.summary }}</p>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section-block">
+    <div class="container">
+        <div class="section-heading">
+            <p class="section-eyebrow">News</p>
+            <h2>Recent updates</h2>
+        </div>
+        <div class="accordion" id="newsAccordion">
+            {% for year, items in news_items.items() %}
+            <div class="accordion-item">
+                <h3 class="accordion-header">
+                    <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ year }}" aria-expanded="{{ 'true' if loop.first else 'false' }}" aria-controls="collapse{{ year }}">
+                        {{ year }}
+                    </button>
+                </h3>
+                <div id="collapse{{ year }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" data-bs-parent="#newsAccordion">
+                    <div class="accordion-body">
+                        <ul class="list-unstyled mb-0">
+                            {% for item in items %}
+                            <li class="news-item">
+                                <span class="news-date">{{ item.date }}</span>
+                                {% if item.url %}
+                                <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.text }}</a>
+                                {% else %}
+                                <span>{{ item.text }}</span>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section-block join-contact-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="plain-panel">
+                    <p class="section-eyebrow">Join Us</p>
+                    <h2>Open to motivated students</h2>
+                    <p>
+                        We welcome undergraduate, MS, and PhD students interested in cloud computing,
+                        storage systems, operating systems, and infrastructure for AI.
+                    </p>
+                    <p>
+                        Please send a brief introduction, CV, transcript if available, and a short note
+                        about which research direction you would like to explore.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="plain-panel">
+                    <p class="section-eyebrow">Contact</p>
+                    <h2>Get in touch</h2>
+                    <p>Oasis Lab is based at Shanghai Jiao Tong University.</p>
+                    <p><span class="blur-text">{{ pi_email_display }}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-block sponsor-section">
+    <div class="container">
+        <div class="section-heading">
+            <p class="section-eyebrow">Sponsors</p>
+            <h2>Supported by</h2>
+        </div>
+        <div class="sponsor-grid">
+            {% for sponsor in sponsors %}
+            <a class="sponsor-logo" href="{{ sponsor.url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ sponsor.name }}">
+                <img src="{{ url_for('static', filename=sponsor.logo) }}" alt="{{ sponsor.name }} logo" loading="lazy">
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

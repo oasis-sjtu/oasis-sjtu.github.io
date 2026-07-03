@@ -1,0 +1,6 @@
+group,name,role,workplace,interests,photo,email,website,scholar,github
+Principal Investigator,Erci Xu,Tenure-track Associate Professor,,"Cloud computing, storage systems, reliability, infrastructure for AI",figures/member-placeholder.svg,ercixu [at] SJTU [dot] edu [dot] cn,https://giorgioercixu.github.io/,https://scholar.google.com/citations?user=7Yc6A1QAAAAJ,https://github.com/giorgioercixu
+PhD Students,Template PhD Student,PhD Student,Company Name (Intern),"Research interest 1, research interest 2",figures/member-placeholder.svg,name [at] sjtu [dot] edu [dot] cn,https://example.com,https://scholar.google.com/,https://github.com/username
+MS Students,Template MS Student,MS Student,Company Name (Intern),"Research interest 1, research interest 2",figures/member-placeholder.svg,name [at] sjtu [dot] edu [dot] cn,https://example.com,https://scholar.google.com/,https://github.com/username
+Undergraduate Students,Template Undergraduate Student,Undergraduate Student,Company Name (Intern),"Research interest 1, research interest 2",figures/member-placeholder.svg,name [at] sjtu [dot] edu [dot] cn,https://example.com,,https://github.com/username
+Alumni,Template Alumnus,Alumnus / Alumna,Company Name,"Current position or previous research area",figures/member-placeholder.svg,name [at] example [dot] com,https://example.com,,
