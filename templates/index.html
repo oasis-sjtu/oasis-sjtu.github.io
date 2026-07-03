@@ -3,29 +3,13 @@
 {% block content %}
 <section class="hero-section">
     <div class="container">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-7">
-                <p class="section-eyebrow mb-2">Shanghai Jiao Tong University</p>
-                <h1 class="hero-title">Oasis Lab</h1>
-                <p class="hero-subtitle">
-                    Operating And Storage Infrastructure System research for cloud, storage,
-                    reliability, and AI infrastructure.
-                </p>
-                <p class="hero-copy">
-                    We study how modern infrastructure behaves at scale and build systems that make it
-                    faster, more reliable, and easier to operate. Our work spans cloud storage systems,
-                    operating systems infrastructure, observability, and systems support for AI workloads.
-                </p>
-                <div class="hero-actions">
-                    <a class="btn btn-primary btn-lg" href="{{ url_for('people') }}">People</a>
-                    <a class="btn btn-outline-primary btn-lg" href="{{ url_for('publication') }}">Publications</a>
-                </div>
+        <div class="hero-inner">
+            <div class="lab-mark" aria-hidden="true">
+                <img src="{{ url_for('static', filename='figures/oasis-wordmark.png') }}" alt="">
             </div>
-            <div class="col-lg-5">
-                <div class="lab-mark" aria-hidden="true">
-                    <img src="{{ url_for('static', filename='figures/oasis-logo.svg') }}" alt="">
-                </div>
-            </div>
+            <p class="hero-acronym" aria-label="Operating And Storage Infrastructure System">
+                <span>O</span>perating <span>A</span>nd <span>S</span>torage <span>I</span>nfrastructure <span>S</span>ystem
+            </p>
         </div>
     </div>
 </section>
@@ -33,7 +17,6 @@
 <section class="section-block" id="research">
     <div class="container">
         <div class="section-heading">
-            <p class="section-eyebrow">Research</p>
             <h2>What we work on</h2>
         </div>
         <div class="research-grid">
@@ -50,7 +33,6 @@
 <section class="section-block">
     <div class="container">
         <div class="section-heading">
-            <p class="section-eyebrow">News</p>
             <h2>Recent updates</h2>
         </div>
         <div class="accordion" id="newsAccordion">
@@ -88,7 +70,6 @@
         <div class="row g-4">
             <div class="col-lg-6">
                 <div class="plain-panel">
-                    <p class="section-eyebrow">Join Us</p>
                     <h2>Open to motivated students</h2>
                     <p>
                         We welcome undergraduate, MS, and PhD students interested in cloud computing,
@@ -102,7 +83,6 @@
             </div>
             <div class="col-lg-6">
                 <div class="plain-panel">
-                    <p class="section-eyebrow">Contact</p>
                     <h2>Get in touch</h2>
                     <p>Oasis Lab is based at Shanghai Jiao Tong University.</p>
                     <p><span class="blur-text">{{ pi_email_display }}</span></p>
@@ -115,8 +95,7 @@
 <section class="section-block sponsor-section">
     <div class="container">
         <div class="section-heading">
-            <p class="section-eyebrow">Sponsors</p>
-            <h2>Supported by</h2>
+            <h2>Sponsors</h2>
         </div>
         <div class="sponsor-grid">
             {% for sponsor in sponsors %}
@@ -127,4 +106,90 @@
         </div>
     </div>
 </section>
+
+<section class="inspiration-section" aria-label="Oasis song inspiration">
+    <div class="container">
+        <p id="oasis-song-recommendation">
+            Need some inspiration? Maybe listen to <cite>Live Forever</cite> from Oasis' <cite>Definitely Maybe</cite>, enjoy!
+        </p>
+        <iframe
+            id="oasis-apple-music-player"
+            class="apple-music-player"
+            title="Apple Music player for Live Forever by Oasis"
+            allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
+            sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
+            src="https://embed.music.apple.com/us/album/live-forever/1517506402?i=1517506707">
+        </iframe>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const oasisSongs = [
+            {
+                title: "Live Forever",
+                album: "Definitely Maybe",
+                embed: "https://embed.music.apple.com/us/album/live-forever/1517506402?i=1517506707"
+            },
+            {
+                title: "Supersonic",
+                album: "Definitely Maybe",
+                embed: "https://embed.music.apple.com/us/album/supersonic/1517506402?i=1517507089"
+            },
+            {
+                title: "Slide Away",
+                album: "Definitely Maybe",
+                embed: "https://embed.music.apple.com/us/album/slide-away/1517506402?i=1517507454"
+            },
+            {
+                title: "Wonderwall",
+                album: "(What's The Story) Morning Glory?",
+                embed: "https://embed.music.apple.com/us/album/wonderwall-remastered/1525933483?i=1525933490"
+            },
+            {
+                title: "Don't Look Back In Anger",
+                album: "(What's The Story) Morning Glory?",
+                embed: "https://embed.music.apple.com/us/album/dont-look-back-in-anger-remastered/1525933483?i=1525933492"
+            },
+            {
+                title: "Some Might Say",
+                album: "(What's The Story) Morning Glory?",
+                embed: "https://embed.music.apple.com/us/album/some-might-say/1517447039?i=1517447629"
+            },
+            {
+                title: "Champagne Supernova",
+                album: "(What's The Story) Morning Glory?",
+                embed: "https://embed.music.apple.com/us/album/champagne-supernova-remastered/1525933483?i=1525933850"
+            },
+            {
+                title: "Stand By Me",
+                album: "Be Here Now",
+                embed: "https://embed.music.apple.com/us/album/stand-by-me/1517475368?i=1517475374"
+            }
+        ];
+        const recommendationNode = document.getElementById('oasis-song-recommendation');
+        const playerNode = document.getElementById('oasis-apple-music-player');
+        if (recommendationNode) {
+            const randomValues = new Uint32Array(1);
+            const randomNumber = window.crypto && window.crypto.getRandomValues
+                ? window.crypto.getRandomValues(randomValues)[0]
+                : Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+            const previousIndex = Number.parseInt(sessionStorage.getItem('lastOasisSongIndex'), 10);
+            let songIndex = randomNumber % oasisSongs.length;
+            if (songIndex === previousIndex) {
+                songIndex = (songIndex + 1) % oasisSongs.length;
+            }
+            sessionStorage.setItem('lastOasisSongIndex', String(songIndex));
+            const song = oasisSongs[songIndex];
+            recommendationNode.innerHTML = `Need some inspiration? Maybe listen to <cite>${song.title}</cite> from Oasis' <cite>${song.album}</cite>, enjoy!`;
+            if (playerNode) {
+                playerNode.src = song.embed;
+                playerNode.title = `Apple Music player for ${song.title} by Oasis`;
+            }
+        }
+    });
+</script>
 {% endblock %}

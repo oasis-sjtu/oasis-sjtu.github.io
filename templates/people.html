@@ -1,18 +1,6 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<section class="page-header">
-    <div class="container">
-        <p class="section-eyebrow">People</p>
-        <h1>Members of Oasis Lab</h1>
-        <p>
-            Member information and copyable example rows are stored in <code>data/people.csv</code>.
-            For current students, the workplace field can show internship information such as
-            <code>Alibaba (Intern)</code>. For alumni, use the workplace field for the current employer.
-        </p>
-    </div>
-</section>
-
 <section class="section-block">
     <div class="container">
         {% for group, members in people.items() %}
@@ -21,7 +9,7 @@
             <div class="people-grid">
                 {% for member in members %}
                 <article class="person-card">
-                    <img src="{{ url_for('static', filename=member.photo or 'figures/member-placeholder.svg') }}" alt="Photo of {{ member.name }}" loading="lazy">
+                    <img src="{{ url_for('static', filename=member.photo or 'figures/member-placeholder.svg') }}" alt="Photo of {{ member.name }}" loading="lazy" onerror="this.onerror=null; this.src='{{ url_for('static', filename='figures/member-placeholder.svg') }}';">
                     <div>
                         <h3>{{ member.name }}{% if member.workplace %} <span class="person-workplace">@ {{ member.workplace }}</span>{% endif %}</h3>
                         <p class="person-role">{{ member.role }}</p>

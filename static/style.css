@@ -33,7 +33,16 @@ h3 {
 }
 
 .hero-section {
-    padding: 5rem 0 4rem;
+    padding: 4.5rem 0 4rem;
+}
+
+.hero-inner {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    max-width: 760px;
+    text-align: center;
 }
 
 .hero-title {
@@ -66,12 +75,25 @@ h3 {
     align-items: center;
     display: flex;
     justify-content: center;
+    margin-bottom: 1.5rem;
 }
 
 .lab-mark img {
     height: auto;
-    max-width: min(320px, 78vw);
+    max-width: 520px;
     width: 100%;
+}
+
+.hero-acronym {
+    color: #268bd2;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.hero-acronym span {
+    color: #000;
 }
 
 .section-block {
@@ -156,7 +178,7 @@ h3 {
 .people-grid {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    grid-template-columns: 1fr;
 }
 
 .person-card {
@@ -273,6 +295,36 @@ h3 {
     max-height: 48px;
     max-width: 128px;
     object-fit: contain;
+    width: 100%;
+}
+
+.inspiration-section {
+    padding: 0 0 3.5rem;
+    text-align: center;
+}
+
+.inspiration-section p {
+    color: #586e75;
+    font-size: 1.02rem;
+    margin: 0 auto 1rem;
+    max-width: 48rem;
+}
+
+.inspiration-section cite {
+    color: #268bd2;
+    font-style: normal;
+    font-weight: 700;
+}
+
+.apple-music-player {
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    display: block;
+    height: 175px;
+    margin: 0 auto;
+    max-width: 960px;
+    overflow: hidden;
     width: 100%;
 }
 
@@ -405,7 +457,8 @@ body.dark-theme .hero-copy,
 body.dark-theme .page-header p,
 body.dark-theme .publication-item,
 body.dark-theme .news-date,
-body.dark-theme .person-workplace {
+body.dark-theme .person-workplace,
+body.dark-theme .inspiration-section p {
     color: #93a1a1;
 }
 
@@ -465,8 +518,20 @@ body.dark-theme .text-muted {
         padding: 3rem 0 2rem;
     }
 
+    .lab-mark img {
+        max-width: 360px;
+    }
+
+    .hero-acronym {
+        font-size: 1.35rem;
+    }
+
     .section-block {
         padding: 2rem 0;
+    }
+
+    .inspiration-section {
+        padding-bottom: 2.5rem;
     }
 
     .person-card {
