@@ -31,6 +31,6 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           deploy_key: ${{ secrets.PRIVATE_KEY }}
-          external_repository: giorgioercixu/oasislab.github.io
+          external_repository: oasis-sjtu/oasis-sjtu.github.io
           publish_branch: master
           publish_dir: ./build  
