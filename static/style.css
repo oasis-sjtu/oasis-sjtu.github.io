@@ -307,7 +307,8 @@ h3 {
     color: #586e75;
     font-size: 1.02rem;
     margin: 0 auto 1rem;
-    max-width: 48rem;
+    max-width: 76rem;
+    white-space: nowrap;
 }
 
 .inspiration-section cite {
@@ -532,6 +533,10 @@ body.dark-theme .text-muted {
 
     .inspiration-section {
         padding-bottom: 2.5rem;
+    }
+
+    .inspiration-section p {
+        white-space: normal;
     }
 
     .person-card {
