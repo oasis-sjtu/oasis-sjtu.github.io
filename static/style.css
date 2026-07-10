@@ -409,9 +409,9 @@ h3 {
 }
 
 .member-author {
-    background: #268bd2;
+    background: rgba(220, 50, 47, 0.14);
     border-radius: 5px;
-    color: #fff;
+    color: #dc322f;
     font-weight: 800;
     padding: 0.05rem 0.28rem;
 }
@@ -493,8 +493,8 @@ body.dark-theme .oasis-author {
 }
 
 body.dark-theme .member-author {
-    background: #5fb3e8;
-    color: #002b36;
+    background: rgba(220, 50, 47, 0.22);
+    color: #ff6b6b;
 }
 
 body.dark-theme .sponsor-logo img {
