@@ -80,20 +80,20 @@ h3 {
 
 .lab-mark img {
     height: auto;
-    max-width: 520px;
+    max-width: 640px;
     width: 100%;
 }
 
 .hero-acronym {
-    color: #268bd2;
-    font-size: 1.75rem;
-    font-weight: 700;
+    color: #586e75;
+    font-size: 1.2rem;
+    font-weight: 500;
     line-height: 1.35;
     margin: 0;
 }
 
 .hero-acronym span {
-    color: #000;
+    color: inherit;
 }
 
 .section-block {
@@ -408,6 +408,14 @@ h3 {
     padding: 0.05rem 0.24rem;
 }
 
+.member-author {
+    background: #268bd2;
+    border-radius: 5px;
+    color: #fff;
+    font-weight: 800;
+    padding: 0.05rem 0.28rem;
+}
+
 #conference-filter {
     background: #eee8d5;
     border-color: #93a1a1 !important;
@@ -484,6 +492,11 @@ body.dark-theme .oasis-author {
     color: #5fb3e8;
 }
 
+body.dark-theme .member-author {
+    background: #5fb3e8;
+    color: #002b36;
+}
+
 body.dark-theme .sponsor-logo img {
     filter: brightness(1.05);
 }
@@ -525,7 +538,7 @@ body.dark-theme .text-muted {
     }
 
     .hero-acronym {
-        font-size: 1.35rem;
+        font-size: 1.05rem;
     }
 
     .section-block {
