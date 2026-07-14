@@ -309,8 +309,8 @@ h3 {
 .sponsor-grid {
     align-items: center;
     display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .sponsor-logo {
@@ -319,21 +319,23 @@ h3 {
     border: 1px solid rgba(147, 161, 161, 0.35);
     border-radius: 8px;
     display: flex;
-    height: 92px;
+    height: 118px;
     justify-content: center;
-    padding: 1rem;
-    transition: border-color 0.18s ease, transform 0.18s ease;
+    padding: 1.1rem 1.3rem;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .sponsor-logo:hover,
 .sponsor-logo:focus {
     border-color: rgba(38, 139, 210, 0.5);
+    box-shadow: 0 0.75rem 1.6rem rgba(7, 54, 66, 0.08);
     transform: translateY(-1px);
 }
 
 .sponsor-logo img {
-    max-height: 48px;
-    max-width: 128px;
+    height: 100%;
+    max-height: 88px;
+    max-width: 245px;
     object-fit: contain;
     width: 100%;
 }
