@@ -90,6 +90,19 @@
                 {% endfor %}
             </div>
         </div>
+        {% if loop.first %}
+        <div class="people-join-callout">
+            <h2>Join Oasis Lab</h2>
+            <p>
+                Oasis Lab is recruiting motivated undergraduate, MS, and PhD students interested in cloud computing,
+                storage systems, operating systems, and infrastructure for AI.
+            </p>
+            <p>
+                Please send a brief introduction, CV, transcript if available, and a short note about which research direction
+                you would like to explore to <span class="blur-text">{{ pi_email_display }}</span>.
+            </p>
+        </div>
+        {% endif %}
         {% endfor %}
     </div>
 </section>
