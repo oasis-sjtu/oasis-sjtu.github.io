@@ -337,8 +337,8 @@ h3 {
 
 .sponsor-logo {
     align-items: center;
-    background-color: #fff;
-    border: 1px solid rgba(147, 161, 161, 0.35);
+    background-color: transparent;
+    border: 1px solid transparent;
     border-radius: 8px;
     display: flex;
     height: 118px;
@@ -349,8 +349,8 @@ h3 {
 
 .sponsor-logo:hover,
 .sponsor-logo:focus {
-    border-color: rgba(38, 139, 210, 0.5);
-    box-shadow: 0 0.75rem 1.6rem rgba(7, 54, 66, 0.08);
+    border-color: rgba(38, 139, 210, 0.28);
+    box-shadow: 0 0.75rem 1.6rem rgba(7, 54, 66, 0.05);
     transform: translateY(-1px);
 }
 
@@ -553,6 +553,16 @@ body.dark-theme .person-publication-summary span {
 body.dark-theme .people-join-callout {
     background: rgba(38, 139, 210, 0.12);
     border-color: rgba(38, 139, 210, 0.24);
+}
+
+body.dark-theme .sponsor-logo {
+    background-color: rgba(238, 232, 213, 0.94);
+    border-color: rgba(147, 161, 161, 0.22);
+}
+
+body.dark-theme .sponsor-logo:hover,
+body.dark-theme .sponsor-logo:focus {
+    border-color: rgba(38, 139, 210, 0.45);
 }
 
 body.dark-theme .oasis-author {
