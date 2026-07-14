@@ -132,19 +132,18 @@ function initializeConferenceFilter() {
     showAllBtn.addEventListener('click', showAll);
     filterContainer.appendChild(showAllBtn);
 
+    const showNoneBtn = document.createElement('button');
+    showNoneBtn.className = 'btn btn-sm btn-outline-secondary';
+    showNoneBtn.type = 'button';
+    showNoneBtn.textContent = 'Show None';
+    showNoneBtn.addEventListener('click', showNone);
+    filterContainer.appendChild(showNoneBtn);
+
     updatePublicationVisibility();
 }
 
 function toggleConference(conf) {
-    const isOnlyActive = conferenceFilters[conf] === true &&
-        Object.values(conferenceFilters).filter(Boolean).length === 1;
-
-    if (isOnlyActive) {
-        Object.keys(conferenceFilters).forEach(key => conferenceFilters[key] = true);
-    } else {
-        Object.keys(conferenceFilters).forEach(key => conferenceFilters[key] = key === conf);
-    }
-
+    conferenceFilters[conf] = !conferenceFilters[conf];
     updatePublicationVisibility();
 }
 
@@ -153,15 +152,24 @@ function showAll() {
     updatePublicationVisibility();
 }
 
+function showNone() {
+    Object.keys(conferenceFilters).forEach(conf => conferenceFilters[conf] = false);
+    updatePublicationVisibility();
+}
+
 function updatePublicationVisibility() {
+    const hasActiveFilter = Object.values(conferenceFilters).some(Boolean);
+
     document.querySelectorAll('.publication-list-global li').forEach((pub) => {
         const conf = pub.dataset.conference;
-        const isVisible = !conf || conferenceFilters[conf];
+        const isVisible = conf ? conferenceFilters[conf] : hasActiveFilter;
         pub.classList.toggle('publication-hidden', !isVisible);
     });
 
     document.querySelectorAll('.conf-filter-btn').forEach((btn) => {
-        btn.classList.toggle('active', conferenceFilters[btn.dataset.conference]);
+        const isActive = conferenceFilters[btn.dataset.conference];
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
 
     document.querySelectorAll('.publication-year').forEach((section) => {
