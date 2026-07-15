@@ -12,6 +12,23 @@
     <meta property="og:image" content="{{ url_for('static', filename='figures/oasis-wordmark.png', _external=True) }}">
     <meta name="twitter:card" content="summary">
     <link rel="canonical" href="{{ request.url }}">
+    <script>
+        (function () {
+            const validThemeModes = ['auto', 'light', 'dark'];
+            let storedThemeMode = 'auto';
+            try {
+                storedThemeMode = localStorage.getItem('theme-mode') || 'auto';
+            } catch (error) {
+                storedThemeMode = 'auto';
+            }
+            const themeMode = validThemeModes.includes(storedThemeMode) ? storedThemeMode : 'auto';
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const resolvedTheme = themeMode === 'auto' ? (prefersDark ? 'dark' : 'light') : themeMode;
+            document.documentElement.classList.toggle('dark-theme', resolvedTheme === 'dark');
+            document.documentElement.dataset.themeMode = themeMode;
+            document.documentElement.style.colorScheme = resolvedTheme;
+        })();
+    </script>
     {% block styles %}
     {{ bootstrap.load_css() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -36,7 +53,11 @@
                     {{ render_nav_item('people', 'People') }}
                     {{ render_nav_item('publication', 'Publications') }}
                 </ul>
-                <button id="theme-toggle" type="button" class="btn btn-sm btn-outline-light ms-lg-auto">Dark Mode</button>
+                <div class="theme-switcher ms-lg-auto" role="group" aria-label="Theme mode">
+                    <button type="button" class="theme-mode-button" data-theme-mode="auto" aria-pressed="true">Auto</button>
+                    <button type="button" class="theme-mode-button" data-theme-mode="light" aria-pressed="false">Light</button>
+                    <button type="button" class="theme-mode-button" data-theme-mode="dark" aria-pressed="false">Dark</button>
+                </div>
             </div>
         </div>
     </nav>
@@ -56,32 +77,75 @@
     {{ bootstrap.load_js() }}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const body = document.body;
-            const themeToggle = document.getElementById('theme-toggle');
-            const storedTheme = localStorage.getItem('theme');
+            const root = document.documentElement;
+            const themeModeButtons = Array.from(document.querySelectorAll('[data-theme-mode]'));
+            const validThemeModes = ['auto', 'light', 'dark'];
+            const systemThemeQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
-            function setTheme(theme) {
-                if (theme === 'dark-theme') {
-                    body.classList.add('dark-theme');
-                    themeToggle.textContent = 'Light Mode';
-                    localStorage.setItem('theme', 'dark-theme');
-                } else {
-                    body.classList.remove('dark-theme');
-                    themeToggle.textContent = 'Dark Mode';
-                    localStorage.setItem('theme', 'light-theme');
+            function resolveTheme(themeMode) {
+                if (themeMode === 'dark') {
+                    return 'dark';
+                }
+                if (themeMode === 'light') {
+                    return 'light';
+                }
+                return systemThemeQuery && systemThemeQuery.matches ? 'dark' : 'light';
+            }
+
+            function getStoredThemeMode() {
+                try {
+                    return localStorage.getItem('theme-mode') || root.dataset.themeMode || 'auto';
+                } catch (error) {
+                    return root.dataset.themeMode || 'auto';
                 }
             }
 
-            if (storedTheme) {
-                setTheme(storedTheme);
-            } else {
-                const hour = new Date().getHours();
-                setTheme(hour >= 19 || hour < 6 ? 'dark-theme' : 'light-theme');
+            function storeThemeMode(themeMode) {
+                try {
+                    localStorage.setItem('theme-mode', themeMode);
+                    localStorage.removeItem('theme');
+                } catch (error) {
+                    return;
+                }
             }
 
-            themeToggle.addEventListener('click', function () {
-                setTheme(body.classList.contains('dark-theme') ? 'light-theme' : 'dark-theme');
+            function applyThemeMode(themeMode, shouldStore) {
+                const selectedThemeMode = validThemeModes.includes(themeMode) ? themeMode : 'auto';
+                const resolvedTheme = resolveTheme(selectedThemeMode);
+                root.classList.toggle('dark-theme', resolvedTheme === 'dark');
+                root.dataset.themeMode = selectedThemeMode;
+                root.dataset.resolvedTheme = resolvedTheme;
+                root.style.colorScheme = resolvedTheme;
+                themeModeButtons.forEach(function (button) {
+                    const isActive = button.dataset.themeMode === selectedThemeMode;
+                    button.classList.toggle('active', isActive);
+                    button.setAttribute('aria-pressed', String(isActive));
+                });
+                if (shouldStore) {
+                    storeThemeMode(selectedThemeMode);
+                }
+            }
+
+            applyThemeMode(getStoredThemeMode(), false);
+
+            themeModeButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    applyThemeMode(button.dataset.themeMode, true);
+                });
             });
+
+            if (systemThemeQuery) {
+                const handleSystemThemeChange = function () {
+                    if (root.dataset.themeMode === 'auto') {
+                        applyThemeMode('auto', false);
+                    }
+                };
+                if (systemThemeQuery.addEventListener) {
+                    systemThemeQuery.addEventListener('change', handleSystemThemeChange);
+                } else if (systemThemeQuery.addListener) {
+                    systemThemeQuery.addListener(handleSystemThemeChange);
+                }
+            }
         });
     </script>
     {% endblock %}
