@@ -76,7 +76,7 @@
                                         <a href="{{ publication.url_code }}" class="btn btn-sm btn-outline-warning me-1 mt-1" target="_blank" rel="noopener noreferrer">Code</a>
                                     {% endif %}
                                     {% if publication.url_dataset %}
-                                        <a href="{{ publication.url_dataset }}" class="btn btn-sm btn-outline-info me-1 mt-1" target="_blank" rel="noopener noreferrer">Dataset</a>
+                                        <a href="{{ publication.url_dataset }}" class="btn btn-sm btn-outline-info me-1 mt-1" target="_blank" rel="noopener noreferrer">Dataset{% if publication.dataset_downloads_display %} · {{ publication.dataset_downloads_display }} downloads{% endif %}</a>
                                     {% endif %}
                                 </span>
                             </li>

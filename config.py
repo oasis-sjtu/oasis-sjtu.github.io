@@ -14,6 +14,7 @@ STATIC_DIR = BASE_DIR / "static"
 DATA_DIR = BASE_DIR / "data"
 
 PUBLICATIONS_CSV = STATIC_DIR / "publications.csv"
+DATASET_METRICS_JSON = STATIC_DIR / "dataset_metrics.json"
 PEOPLE_CSV = DATA_DIR / "people.csv"
 RESEARCH_CSV = DATA_DIR / "research.csv"
 NEWS_CSV = DATA_DIR / "news.csv"

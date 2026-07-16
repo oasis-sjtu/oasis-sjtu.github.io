@@ -1,8 +1,11 @@
 import ast
 import csv
+import json
 import re
 from collections import defaultdict
+from functools import lru_cache
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 import config
 
@@ -12,6 +15,56 @@ def _clean(value: Optional[str]) -> Optional[str]:
         return None
     value = value.strip()
     return value or None
+
+
+def _tianchi_dataset_id(url: Optional[str]) -> Optional[str]:
+    if not url:
+        return None
+    parsed = urlparse(url)
+    match = re.search(r"/dataset/(\d+)", parsed.path)
+    if parsed.netloc.endswith("tianchi.aliyun.com") and match:
+        return match.group(1)
+    return None
+
+
+def _dataset_metric_keys(url: Optional[str]) -> List[str]:
+    if not url:
+        return []
+    parsed = urlparse(url)
+    clean_url = parsed._replace(query="", fragment="").geturl()
+    keys = [url, clean_url]
+    dataset_id = _tianchi_dataset_id(url)
+    if dataset_id:
+        keys.extend([dataset_id, f"https://tianchi.aliyun.com/dataset/{dataset_id}"])
+    return list(dict.fromkeys(keys))
+
+
+@lru_cache(maxsize=1)
+def load_dataset_metrics(filename=None) -> Dict[str, Dict[str, Any]]:
+    filename = filename or config.DATASET_METRICS_JSON
+    try:
+        with open(filename, "r", encoding="utf-8") as metrics_file:
+            raw_metrics = json.load(metrics_file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+    datasets = raw_metrics.get("datasets", {})
+    metrics: Dict[str, Dict[str, Any]] = {}
+    for key, value in datasets.items():
+        if not isinstance(value, dict):
+            continue
+        for metric_key in _dataset_metric_keys(key) or [key]:
+            metrics[metric_key] = value
+    return metrics
+
+
+def _format_download_count(value: Any) -> Optional[str]:
+    if isinstance(value, bool) or value is None:
+        return None
+    try:
+        return f"{int(value):,}"
+    except (TypeError, ValueError):
+        return None
 
 
 def _conference_key(shortconf: Optional[str]) -> Optional[str]:
@@ -71,6 +124,7 @@ def _build_author_entries(authors: List[str], oasis_member_names: set) -> List[D
 def load_publications(filename=None) -> List[Dict[str, Any]]:
     filename = filename or config.PUBLICATIONS_CSV
     oasis_member_names = load_oasis_member_names()
+    dataset_metrics = load_dataset_metrics()
     fieldnames = [
         "title",
         "award",
@@ -104,6 +158,16 @@ def load_publications(filename=None) -> List[Dict[str, Any]]:
                 publication["authors"],
                 oasis_member_names,
             )
+            publication["dataset_downloads"] = None
+            publication["dataset_downloads_display"] = None
+            for metric_key in _dataset_metric_keys(publication.get("url_dataset")):
+                metric = dataset_metrics.get(metric_key)
+                if metric:
+                    publication["dataset_downloads"] = metric.get("downloads")
+                    publication["dataset_downloads_display"] = _format_download_count(
+                        publication["dataset_downloads"]
+                    )
+                    break
             publications.append(publication)
 
     return publications
