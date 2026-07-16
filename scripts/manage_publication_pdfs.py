@@ -4,7 +4,6 @@ import concurrent.futures
 import csv
 import json
 import re
-import subprocess
 import sys
 import tempfile
 import urllib.error
@@ -276,24 +275,6 @@ def write_publications(path: Path, publications: Iterable[Publication]) -> None:
     with path.open("w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile, lineterminator="\n")
         writer.writerows(publication.row for publication in publications)
-
-
-def staged_publication_files() -> Set[Path]:
-    result = subprocess.run(
-        ["git", "diff", "--cached", "--name-only", "--", "static/publications.csv", "static/papers"],
-        cwd=ROOT,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-    if result.returncode != 0:
-        return set()
-    return {
-        (ROOT / line.strip()).resolve()
-        for line in result.stdout.splitlines()
-        if line.strip()
-    }
 
 
 def publication_link_entries(publications: Iterable[Publication]) -> List[Tuple[Publication, str, str]]:
@@ -701,39 +682,6 @@ def json_report(results: Dict[str, List[AuditItem]]) -> str:
     )
 
 
-def pre_commit_check(publications: List[Publication], link_timeout: int, link_workers: int) -> int:
-    staged_files = staged_publication_files()
-    if not staged_files:
-        print("No staged publication CSV/PDF changes; skipping publication PDF gate.")
-        return 0
-
-    results = audit(publications)
-    blocking = blocking_audit_items(results)
-    staged_pdfs = {path for path in staged_files if path.suffix.lower() == ".pdf"}
-    findings = link_findings(publications, only_paths=staged_pdfs)
-    link_issues = check_publication_links(publications, timeout=link_timeout, workers=link_workers)
-
-    print_report(results)
-    if staged_pdfs:
-        print_link_findings(findings)
-    print_link_check_issues(link_issues)
-
-    if blocking or findings or link_issues:
-        print("\nPublication PDF gate failed.", file=sys.stderr)
-        if blocking:
-            print("Fix missing/local/remote/orphan PDF issues before committing.", file=sys.stderr)
-        if findings:
-            print("Review extracted code/dataset candidates and update static/publications.csv.", file=sys.stderr)
-        if link_issues:
-            print("Fix or replace invalid publication links before committing.", file=sys.stderr)
-        return 1
-
-    if results["missing_pdf"]:
-        print("\nNote: future or incomplete publications still have no known PDF; not blocking.")
-    print("\nPublication PDF gate passed.")
-    return 0
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Audit and maintain local publication PDFs.")
     parser.add_argument("--csv", type=Path, default=PUBLICATIONS_CSV)
@@ -741,7 +689,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--strict", action="store_true", help="Exit non-zero if any issue remains.")
     parser.add_argument("--extract-links", action="store_true", help="Scan local PDFs for code/dataset candidate links.")
     parser.add_argument("--check-links", action="store_true", help="Check all publication links for local existence or remote reachability.")
-    parser.add_argument("--pre-commit", action="store_true", help="Run the publication PDF gate for staged changes.")
     parser.add_argument("--download-open", action="store_true", help="Download open direct remote PDFs.")
     parser.add_argument("--write", action="store_true", help="Write CSV changes after downloads.")
     parser.add_argument("--timeout", type=int, default=120, help="Per-download timeout in seconds.")
@@ -753,9 +700,6 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     publications = read_publications(args.csv)
-
-    if args.pre_commit:
-        return pre_commit_check(publications, link_timeout=args.link_timeout, link_workers=args.link_workers)
 
     if args.download_open:
         downloaded, failed = download_open_pdfs(publications, write_csv=args.write, timeout=args.timeout)

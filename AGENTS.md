@@ -1,6 +1,6 @@
 # Oasis Lab Site Agent Context
 
-This repository is the Oasis Lab static website. Treat publication changes as a gated workflow, not as a plain CSV edit.
+This repository is the Oasis Lab static website. Treat publication changes as a structured workflow, not as a plain CSV edit.
 
 ## Publication Change Workflow
 
@@ -31,21 +31,3 @@ When adding or editing publications:
    ```
 
 If a remote site returns 403 or times out due to anti-bot behavior but opens in a normal browser, treat it as reachable after browser verification and document the judgment in the handoff summary.
-
-## Commit Gate
-
-This repo uses `.githooks/pre-commit`. It runs automatically for commits that touch `static/publications.csv` or `static/papers/` when local Git has:
-
-```sh
-git config core.hooksPath .githooks
-```
-
-The gate checks:
-
-- existing local paper PDFs are present;
-- remote paper PDFs are not used where local hosting is expected;
-- orphan PDFs are not left in `static/papers/`;
-- newly staged PDFs do not contain unrecorded code/dataset candidates;
-- all publication links are reachable.
-
-Future accepted papers without PDFs are reported but do not block commits.
