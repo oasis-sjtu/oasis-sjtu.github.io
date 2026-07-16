@@ -19,6 +19,7 @@ PEOPLE_CSV = DATA_DIR / "people.csv"
 RESEARCH_CSV = DATA_DIR / "research.csv"
 NEWS_CSV = DATA_DIR / "news.csv"
 SPONSORS_CSV = DATA_DIR / "sponsors.csv"
+AWARDS_CSV = DATA_DIR / "awards.csv"
 
 SITE_TITLE = "Oasis Lab"
 NAVBAR_TITLE = "Oasis Lab"

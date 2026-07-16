@@ -259,3 +259,13 @@ def load_sponsors(filename=None) -> List[Dict[str, str]]:
             for row in csv.DictReader(csvfile)
             if row.get("name")
         ]
+
+
+def load_awards(filename=None) -> List[Dict[str, str]]:
+    filename = filename or config.AWARDS_CSV
+    with open(filename, newline="", encoding="utf-8") as csvfile:
+        return [
+            {k: (v or "").strip() for k, v in row.items()}
+            for row in csv.DictReader(csvfile)
+            if row.get("title")
+        ]

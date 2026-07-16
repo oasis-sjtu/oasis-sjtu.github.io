@@ -3,6 +3,7 @@ from flask_bootstrap import Bootstrap5
 
 import config
 from data_utils import (
+    load_awards,
     load_news,
     load_people_with_publications,
     load_publications,
@@ -35,6 +36,7 @@ def home():
         "index.html",
         page_title="Home",
         research_areas=load_research(),
+        awards=load_awards(),
         news_items=load_news(limit=12),
         sponsors=load_sponsors(),
     )
