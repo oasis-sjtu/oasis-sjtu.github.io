@@ -7,26 +7,30 @@ This repository is the Oasis Lab static website. Treat publication changes as a 
 When adding or editing publications:
 
 1. Update `static/publications.csv` using the existing column order.
-2. Prefer local paper PDFs in `static/papers/`, referenced as `../static/papers/<file>.pdf`.
-3. Keep DOI or publisher pages in `url_page`; do not use publisher PDF links as the main PDF when a local hosted PDF is available.
-4. If adding a PDF, scan it for repository and dataset candidates:
+2. Add `url_page` whenever an official paper, DOI, conference, ACM, IEEE, USENIX, or author page is available. It is not mandatory before a page exists.
+3. Once a downloadable camera-ready or public PDF exists, download it by default and host it in `static/papers/`, referenced as `../static/papers/<file>.pdf`.
+4. For ACM/IEEE publisher PDFs, use the user's logged-in Chrome session when needed. If access fails, ask the user to sign in to ACM DL / IEEE Xplore / SJTU access and retry.
+5. Do not infer `url_code` or `url_dataset` from general web search. Only fill them from links extracted from the paper PDF itself.
+6. If adding a PDF, scan it for repository and dataset candidates:
 
    ```sh
    ./venv/bin/python scripts/manage_publication_pdfs.py --extract-links
    ```
 
-5. Fill `url_code` and `url_dataset` whenever the PDF or official page exposes a project, artifact, code, or dataset link.
-6. Check all publication links:
+7. Check `url_video` and `url_slides` for every paper. Fill them when official pages expose them; absence is acceptable only after checking.
+8. Check all publication links:
 
    ```sh
    ./venv/bin/python scripts/manage_publication_pdfs.py --check-links
    ```
 
-7. Build the site:
+9. Build the site:
 
    ```sh
    ./venv/bin/python freeze.py
    ```
+
+If a remote site returns 403 or times out due to anti-bot behavior but opens in a normal browser, treat it as reachable after browser verification and document the judgment in the handoff summary.
 
 ## Commit Gate
 
