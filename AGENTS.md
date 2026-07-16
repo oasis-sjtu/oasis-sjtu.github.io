@@ -17,14 +17,16 @@ When adding or editing publications:
    ./venv/bin/python scripts/manage_publication_pdfs.py --extract-links
    ```
 
-7. Check `url_video` and `url_slides` for every paper. Fill them when official pages expose them; absence is acceptable only after checking.
-8. Check all publication links:
+7. For the publication being added or edited, check `url_video` and `url_slides`. Fill them when official pages expose them; absence is acceptable only after checking.
+8. Use each publication update as a backfill pass for recent work: review the 10 most recent publications in `static/publications.csv` for newly available `url_page`, downloadable/localizable `url_pdf`, `url_video`, `url_slides`, and official talk/video pages. Do not do a full web backfill for older publications unless the user asks or the audit/link checks point to a specific issue.
+9. If the recent-10 backfill adds any PDF, localize it in `static/papers/` and scan it for repository and dataset candidates before filling `url_code` or `url_dataset`.
+10. Check all publication links:
 
    ```sh
    ./venv/bin/python scripts/manage_publication_pdfs.py --check-links
    ```
 
-9. Build the site:
+11. Build the site:
 
    ```sh
    ./venv/bin/python freeze.py

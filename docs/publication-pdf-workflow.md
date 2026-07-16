@@ -63,8 +63,20 @@ If access fails, ask the user to sign in to ACM DL / IEEE Xplore / SJTU access i
 - `url_page`: fill it whenever an official paper, DOI, conference, ACM, IEEE, USENIX, or author page is available. It is not mandatory before one exists.
 - `url_pdf`: once a PDF can be downloaded, host it locally in `static/papers/`.
 - `url_code` and `url_dataset`: only fill these from links extracted from the paper PDF. Do not use general web search to guess repositories or datasets.
-- `url_video` and `url_slides`: check every paper and fill them when official pages expose them.
+- `url_video` and `url_slides`: check the publication being added or edited and fill them when official pages expose them.
 - Link failures: 404 and missing local files must be fixed. 403/timeout caused by anti-bot behavior may pass after browser verification.
+
+## Recent-10 Backfill
+
+Every publication update should also review the 10 most recent publications in `static/publications.csv` for newly available metadata:
+
+- official paper, conference, DOI, ACM, IEEE, USENIX, or author pages for `url_page`;
+- downloadable camera-ready or public PDFs that can now be localized in `static/papers/`;
+- official videos, talks, and slides for `url_video` and `url_slides`.
+
+This is a targeted backfill pass, not a full historical web search. Do not re-check older publications unless the user asks, a link audit reports a concrete issue, or a paper is already being edited for another reason.
+
+If the recent-10 pass adds a PDF, run the PDF link extraction and only fill `url_code` or `url_dataset` from repository or dataset links found inside that PDF.
 
 Whenever a new PDF is added, run:
 
