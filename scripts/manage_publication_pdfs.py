@@ -3,14 +3,15 @@ import argparse
 import csv
 import json
 import re
+import subprocess
 import sys
 import tempfile
 import urllib.error
 import urllib.request
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple
-from urllib.parse import urlparse
+from typing import Dict, Iterable, List, Optional, Set, Tuple
+from urllib.parse import parse_qs, urlparse
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,6 +59,37 @@ STOPWORDS = {
     "with",
 }
 
+ARTIFACT_TOKENS = {
+    "ae",
+    "artifact",
+    "artifacts",
+    "evaluation",
+    "submission",
+    "opensource",
+    "open-source",
+}
+
+CODE_HOSTS = {
+    "github.com",
+    "gitlab.com",
+    "bitbucket.org",
+    "sourceforge.net",
+}
+
+DATASET_HOSTS = {
+    "tianchi.aliyun.com",
+    "zenodo.org",
+    "figshare.com",
+    "huggingface.co",
+    "kaggle.com",
+    "dataverse.harvard.edu",
+    "osf.io",
+    "data.mendeley.com",
+    "datahub.io",
+}
+
+URL_PATTERN = re.compile(rb"https?://[^\s<>()\"'{}|\\^\[\]`]+")
+
 
 @dataclass
 class Publication:
@@ -85,6 +117,18 @@ class AuditItem:
     suggested_file: Optional[str] = None
     download_url: Optional[str] = None
     reason: Optional[str] = None
+
+
+@dataclass
+class LinkFinding:
+    row: int
+    shortconf: str
+    title: str
+    pdf: str
+    kind: str
+    url: str
+    csv_value: str
+    reason: str
 
 
 def clean_slug(value: str) -> str:
@@ -123,6 +167,27 @@ def local_pdf_path(url_pdf: str) -> Path:
 def is_remote_pdf(url_pdf: str) -> bool:
     parsed = urlparse(url_pdf)
     return parsed.scheme in {"http", "https"} and parsed.path.lower().endswith(".pdf")
+
+
+def canonical_url(url: str) -> str:
+    parsed = urlparse(url.strip())
+    host = parsed.netloc.lower()
+    if host.startswith("www."):
+        host = host[4:]
+
+    if host == "tianchi.aliyun.com":
+        data_id = None
+        dataset_match = re.search(r"/dataset/(\d+)", parsed.path)
+        if dataset_match:
+            data_id = dataset_match.group(1)
+        elif parsed.path == "/dataset/dataDetail":
+            data_id = parse_qs(parsed.query).get("dataId", [None])[0]
+        if data_id:
+            return f"https://tianchi.aliyun.com/dataset/{data_id}"
+
+    path = re.sub(r"/+$", "", parsed.path)
+    scheme = "https" if parsed.scheme in {"http", "https"} else parsed.scheme
+    return parsed._replace(scheme=scheme, netloc=host, path=path, params="", query="", fragment="").geturl().lower()
 
 
 def is_open_direct_pdf(url_pdf: str) -> bool:
@@ -164,10 +229,37 @@ def read_publications(path: Path) -> List[Publication]:
         return [Publication(index, row) for index, row in enumerate(csv.reader(csvfile), 1)]
 
 
+def publications_by_local_pdf(publications: Iterable[Publication]) -> Dict[Path, Publication]:
+    mapping: Dict[Path, Publication] = {}
+    for publication in publications:
+        url_pdf = publication.get("url_pdf")
+        if is_local_pdf(url_pdf):
+            mapping[local_pdf_path(url_pdf).resolve()] = publication
+    return mapping
+
+
 def write_publications(path: Path, publications: Iterable[Publication]) -> None:
     with path.open("w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile, lineterminator="\n")
         writer.writerows(publication.row for publication in publications)
+
+
+def staged_publication_files() -> Set[Path]:
+    result = subprocess.run(
+        ["git", "diff", "--cached", "--name-only", "--", "static/publications.csv", "static/papers"],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode != 0:
+        return set()
+    return {
+        (ROOT / line.strip()).resolve()
+        for line in result.stdout.splitlines()
+        if line.strip()
+    }
 
 
 def referenced_local_paths(publications: Iterable[Publication]) -> Dict[Path, Publication]:
@@ -243,6 +335,115 @@ def audit(publications: List[Publication]) -> Dict[str, List[AuditItem]]:
     }
 
 
+def extract_urls_from_pdf(path: Path) -> List[str]:
+    data = path.read_bytes()
+    urls = set()
+    for match in URL_PATTERN.finditer(data):
+        raw = match.group(0).decode("latin-1", errors="ignore")
+        raw = raw.replace("\\/", "/").replace("\\)", "").replace("\\(", "")
+        raw = raw.rstrip(".,;:)]}>")
+        if raw:
+            urls.add(raw)
+    return sorted(urls)
+
+
+def title_tokens(publication: Publication) -> Set[str]:
+    return {
+        token
+        for token in clean_slug(publication.get("title")).split("-")
+        if len(token) >= 4 and token not in STOPWORDS
+    }
+
+
+def looks_like_project_link(url: str, publication: Publication) -> bool:
+    parsed = urlparse(url)
+    path_tokens = set(re.findall(r"[a-z0-9]+", parsed.path.lower()))
+    if not path_tokens:
+        return False
+    if path_tokens & ARTIFACT_TOKENS:
+        return True
+    return bool(path_tokens & title_tokens(publication))
+
+
+def classify_candidate_url(url: str, publication: Publication) -> Optional[str]:
+    parsed = urlparse(url)
+    host = parsed.netloc.lower()
+    if host.startswith("www."):
+        host = host[4:]
+
+    if host in CODE_HOSTS:
+        return "code" if looks_like_project_link(url, publication) else None
+
+    if host in DATASET_HOSTS:
+        if host == "huggingface.co" and not parsed.path.startswith("/datasets/"):
+            return None
+        if host == "kaggle.com" and "/datasets/" not in parsed.path:
+            return None
+        if host == "tianchi.aliyun.com" and "/dataset/" not in parsed.path:
+            return None
+        return "dataset"
+
+    return None
+
+
+def is_recorded(candidate: str, csv_value: str) -> bool:
+    if not csv_value:
+        return False
+    candidate_url = canonical_url(candidate)
+    csv_url = canonical_url(csv_value)
+    return candidate_url == csv_url or candidate_url.startswith(f"{csv_url}/") or csv_url.startswith(f"{candidate_url}/")
+
+
+def link_findings(publications: List[Publication], only_paths: Optional[Set[Path]] = None) -> List[LinkFinding]:
+    publication_by_pdf = publications_by_local_pdf(publications)
+    findings: List[LinkFinding] = []
+
+    for pdf_path, publication in sorted(publication_by_pdf.items(), key=lambda item: str(item[0])):
+        if only_paths and pdf_path not in only_paths:
+            continue
+        if not pdf_path.exists():
+            continue
+
+        for url in extract_urls_from_pdf(pdf_path):
+            kind = classify_candidate_url(url, publication)
+            if not kind:
+                continue
+
+            field = "url_code" if kind == "code" else "url_dataset"
+            csv_value = publication.get(field)
+            if not csv_value:
+                reason = f"candidate {kind} link found in PDF, but {field} is empty"
+            elif is_recorded(url, csv_value):
+                continue
+            elif kind == "code" and looks_like_project_link(csv_value, publication):
+                continue
+            else:
+                reason = f"candidate {kind} link is not recorded in {field}"
+
+            findings.append(
+                LinkFinding(
+                    row=publication.row_number,
+                    shortconf=publication.get("shortconf"),
+                    title=publication.get("title"),
+                    pdf=str(pdf_path.relative_to(ROOT)),
+                    kind=kind,
+                    url=url,
+                    csv_value=csv_value,
+                    reason=reason,
+                )
+            )
+
+    return findings
+
+
+def blocking_audit_items(results: Dict[str, List[AuditItem]]) -> Dict[str, List[AuditItem]]:
+    return {
+        key: results[key]
+        for key in ("local_missing", "remote_pdf", "browser_required", "orphan_pdf")
+        if results[key]
+    }
+
+
 def download_file(url: str, destination: Path, timeout: int) -> None:
     request = urllib.request.Request(
         url,
@@ -309,6 +510,16 @@ def print_report(results: Dict[str, List[AuditItem]]) -> None:
             print(f"  - {location}: {item.shortconf} | {item.title}{suggested}{source}")
 
 
+def print_link_findings(findings: List[LinkFinding]) -> None:
+    print(f"\nCode/dataset candidates from PDFs: {len(findings)}")
+    for finding in findings:
+        csv_value = f" | csv={finding.csv_value}" if finding.csv_value else ""
+        print(
+            f"  - row {finding.row}: {finding.shortconf} | {finding.kind} | "
+            f"{finding.url}{csv_value} | {finding.reason}"
+        )
+
+
 def json_report(results: Dict[str, List[AuditItem]]) -> str:
     return json.dumps(
         {key: [asdict(item) for item in items] for key, items in results.items()},
@@ -317,11 +528,42 @@ def json_report(results: Dict[str, List[AuditItem]]) -> str:
     )
 
 
+def pre_commit_check(publications: List[Publication]) -> int:
+    staged_files = staged_publication_files()
+    if not staged_files:
+        print("No staged publication CSV/PDF changes; skipping publication PDF gate.")
+        return 0
+
+    results = audit(publications)
+    blocking = blocking_audit_items(results)
+    staged_pdfs = {path for path in staged_files if path.suffix.lower() == ".pdf"}
+    findings = link_findings(publications, only_paths=staged_pdfs)
+
+    print_report(results)
+    if staged_pdfs:
+        print_link_findings(findings)
+
+    if blocking or findings:
+        print("\nPublication PDF gate failed.", file=sys.stderr)
+        if blocking:
+            print("Fix missing/local/remote/orphan PDF issues before committing.", file=sys.stderr)
+        if findings:
+            print("Review extracted code/dataset candidates and update static/publications.csv.", file=sys.stderr)
+        return 1
+
+    if results["missing_pdf"]:
+        print("\nNote: future or incomplete publications still have no known PDF; not blocking.")
+    print("\nPublication PDF gate passed.")
+    return 0
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Audit and maintain local publication PDFs.")
     parser.add_argument("--csv", type=Path, default=PUBLICATIONS_CSV)
     parser.add_argument("--json", action="store_true", help="Print machine-readable audit output.")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero if any issue remains.")
+    parser.add_argument("--extract-links", action="store_true", help="Scan local PDFs for code/dataset candidate links.")
+    parser.add_argument("--pre-commit", action="store_true", help="Run the publication PDF gate for staged changes.")
     parser.add_argument("--download-open", action="store_true", help="Download open direct remote PDFs.")
     parser.add_argument("--write", action="store_true", help="Write CSV changes after downloads.")
     parser.add_argument("--timeout", type=int, default=120, help="Per-download timeout in seconds.")
@@ -332,6 +574,9 @@ def main() -> int:
     args = parse_args()
     publications = read_publications(args.csv)
 
+    if args.pre_commit:
+        return pre_commit_check(publications)
+
     if args.download_open:
         downloaded, failed = download_open_pdfs(publications, write_csv=args.write, timeout=args.timeout)
         if args.write and downloaded:
@@ -340,9 +585,14 @@ def main() -> int:
 
     results = audit(publications)
     if args.json:
-        print(json_report(results))
+        payload = {key: [asdict(item) for item in items] for key, items in results.items()}
+        if args.extract_links:
+            payload["link_findings"] = [asdict(item) for item in link_findings(publications)]
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         print_report(results)
+        if args.extract_links:
+            print_link_findings(link_findings(publications))
 
     if args.strict and any(results.values()):
         return 1

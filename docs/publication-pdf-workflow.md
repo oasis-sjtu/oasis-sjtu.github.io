@@ -10,6 +10,12 @@ Run a read-only scan:
 ./venv/bin/python scripts/manage_publication_pdfs.py
 ```
 
+Scan local PDFs for code and dataset candidates:
+
+```sh
+./venv/bin/python scripts/manage_publication_pdfs.py --extract-links
+```
+
 The report groups papers into:
 
 - `Local PDF path missing`: CSV points to `../static/papers/*.pdf`, but the file is absent.
@@ -44,6 +50,31 @@ Publisher PDFs that require institutional access should be downloaded from a log
 4. Copy them into `static/papers/` using the script's suggested file names.
 5. Update the `url_pdf` column in `static/publications.csv` to `../static/papers/<file>.pdf`.
 
+Whenever a new PDF is added, run:
+
+```sh
+./venv/bin/python scripts/manage_publication_pdfs.py --extract-links
+```
+
+If the PDF contains candidate repository or dataset links, make sure `url_code` and `url_dataset` are filled in `static/publications.csv`.
+
+## Pre-Commit Gate
+
+The repository includes `.githooks/pre-commit`. Enable it once per clone:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+After that, any commit touching `static/publications.csv` or `static/papers/` will:
+
+- verify existing local PDF paths still exist;
+- block remote paper PDF links and orphan paper PDFs;
+- identify ACM/IEEE pages that should be downloaded through a logged-in browser;
+- scan newly staged PDFs for code/dataset candidate links and block until those candidates are reflected in `static/publications.csv`.
+
+Future accepted papers without any known PDF are reported but do not block commits.
+
 ## Verification
 
 After changes:
@@ -51,6 +82,7 @@ After changes:
 ```sh
 ./venv/bin/python -B -c "from data_utils import load_publications; print(len(load_publications()))"
 ./venv/bin/python scripts/manage_publication_pdfs.py
+./venv/bin/python scripts/manage_publication_pdfs.py --extract-links
 ./venv/bin/python freeze.py
 ```
 
