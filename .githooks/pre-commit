@@ -13,4 +13,4 @@ else
 fi
 
 echo "Running publication PDF gate..."
-"$PYTHON" -B scripts/manage_publication_pdfs.py --pre-commit
+"$PYTHON" -B scripts/manage_publication_pdfs.py --pre-commit --link-timeout 30 --link-workers 4

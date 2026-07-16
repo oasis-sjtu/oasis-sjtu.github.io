@@ -16,6 +16,12 @@ Scan local PDFs for code and dataset candidates:
 ./venv/bin/python scripts/manage_publication_pdfs.py --extract-links
 ```
 
+Check every publication link:
+
+```sh
+./venv/bin/python scripts/manage_publication_pdfs.py --check-links
+```
+
 The report groups papers into:
 
 - `Local PDF path missing`: CSV points to `../static/papers/*.pdf`, but the file is absent.
@@ -72,6 +78,7 @@ After that, any commit touching `static/publications.csv` or `static/papers/` wi
 - block remote paper PDF links and orphan paper PDFs;
 - identify ACM/IEEE pages that should be downloaded through a logged-in browser;
 - scan newly staged PDFs for code/dataset candidate links and block until those candidates are reflected in `static/publications.csv`.
+- check all publication links for local existence or remote reachability.
 
 Future accepted papers without any known PDF are reported but do not block commits.
 
@@ -83,6 +90,7 @@ After changes:
 ./venv/bin/python -B -c "from data_utils import load_publications; print(len(load_publications()))"
 ./venv/bin/python scripts/manage_publication_pdfs.py
 ./venv/bin/python scripts/manage_publication_pdfs.py --extract-links
+./venv/bin/python scripts/manage_publication_pdfs.py --check-links
 ./venv/bin/python freeze.py
 ```
 
@@ -91,3 +99,4 @@ Expected state before publishing:
 - Paper PDFs point to `../static/papers/*.pdf`.
 - Remote `.pdf` links in generated pages should be slides only, not paper PDFs.
 - `static/papers/` should have no orphan files unless intentionally staged for future use.
+- Publication links should have zero validity failures.

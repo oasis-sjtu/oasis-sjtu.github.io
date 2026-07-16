@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import concurrent.futures
 import csv
 import json
 import re
@@ -26,6 +27,15 @@ FIELDNAMES = [
     "year",
     "conference",
     "shortconf",
+    "url_pdf",
+    "url_code",
+    "url_dataset",
+    "url_slides",
+    "url_video",
+    "url_page",
+]
+
+PUBLICATION_LINK_FIELDS = [
     "url_pdf",
     "url_code",
     "url_dataset",
@@ -88,6 +98,12 @@ DATASET_HOSTS = {
     "datahub.io",
 }
 
+ANTI_BOT_403_HOSTS = {
+    "doi.org",
+    "dl.acm.org",
+    "ieeexplore.ieee.org",
+}
+
 URL_PATTERN = re.compile(rb"https?://[^\s<>()\"'{}|\\^\[\]`]+")
 
 
@@ -131,6 +147,16 @@ class LinkFinding:
     reason: str
 
 
+@dataclass
+class LinkCheckIssue:
+    row: int
+    shortconf: str
+    title: str
+    field: str
+    url: str
+    reason: str
+
+
 def clean_slug(value: str) -> str:
     value = value.lower()
     value = value.replace("'", "")
@@ -162,6 +188,14 @@ def is_local_pdf(url_pdf: str) -> bool:
 
 def local_pdf_path(url_pdf: str) -> Path:
     return ROOT / url_pdf.replace("../", "", 1)
+
+
+def local_reference_path(value: str) -> Optional[Path]:
+    if value.startswith("../"):
+        return (ROOT / value.replace("../", "", 1)).resolve()
+    if value.startswith("/"):
+        return (ROOT / value.lstrip("/")).resolve()
+    return None
 
 
 def is_remote_pdf(url_pdf: str) -> bool:
@@ -260,6 +294,16 @@ def staged_publication_files() -> Set[Path]:
         for line in result.stdout.splitlines()
         if line.strip()
     }
+
+
+def publication_link_entries(publications: Iterable[Publication]) -> List[Tuple[Publication, str, str]]:
+    entries: List[Tuple[Publication, str, str]] = []
+    for publication in publications:
+        for field in PUBLICATION_LINK_FIELDS:
+            value = publication.get(field)
+            if value:
+                entries.append((publication, field, value))
+    return entries
 
 
 def referenced_local_paths(publications: Iterable[Publication]) -> Dict[Path, Publication]:
@@ -444,6 +488,126 @@ def blocking_audit_items(results: Dict[str, List[AuditItem]]) -> Dict[str, List[
     }
 
 
+def check_local_link(publication: Publication, field: str, value: str) -> Optional[LinkCheckIssue]:
+    path = local_reference_path(value)
+    if not path:
+        return None
+    try:
+        path.relative_to(ROOT)
+    except ValueError:
+        return LinkCheckIssue(
+            row=publication.row_number,
+            shortconf=publication.get("shortconf"),
+            title=publication.get("title"),
+            field=field,
+            url=value,
+            reason="local link points outside the repository",
+        )
+    if path.exists():
+        return None
+    return LinkCheckIssue(
+        row=publication.row_number,
+        shortconf=publication.get("shortconf"),
+        title=publication.get("title"),
+        field=field,
+        url=value,
+        reason="local linked file does not exist",
+    )
+
+
+def check_remote_url(url: str, timeout: int) -> Optional[str]:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"}:
+        return None
+    host = parsed.netloc.lower()
+    if host.startswith("www."):
+        host = host[4:]
+
+    last_error = None
+    for method in ("HEAD", "GET"):
+        headers = {
+            "User-Agent": "Mozilla/5.0 publication-link-checker",
+            "Accept": "text/html,application/pdf,*/*",
+        }
+        if method == "GET":
+            headers["Range"] = "bytes=0-1023"
+        request = urllib.request.Request(url, method=method, headers=headers)
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                status = response.getcode()
+                if 200 <= status < 400:
+                    if method == "GET":
+                        response.read(1024)
+                    return None
+                last_error = f"HTTP {status}"
+        except urllib.error.HTTPError as exc:
+            if exc.code == 403 and host in ANTI_BOT_403_HOSTS:
+                return None
+            last_error = f"HTTP {exc.code}"
+            if method == "HEAD":
+                continue
+        except urllib.error.URLError as exc:
+            last_error = str(exc.reason)
+            if method == "HEAD":
+                continue
+        except TimeoutError:
+            last_error = "timeout"
+            if method == "HEAD":
+                continue
+        except OSError as exc:
+            last_error = str(exc)
+            if method == "HEAD":
+                continue
+
+    return last_error or "unreachable"
+
+
+def check_publication_links(
+    publications: List[Publication],
+    timeout: int,
+    workers: int,
+) -> List[LinkCheckIssue]:
+    issues: List[LinkCheckIssue] = []
+    remote_tasks: Dict[str, List[Tuple[Publication, str, str]]] = {}
+
+    for publication, field, value in publication_link_entries(publications):
+        local_issue = check_local_link(publication, field, value)
+        if local_issue:
+            issues.append(local_issue)
+            continue
+
+        parsed = urlparse(value)
+        if parsed.scheme in {"http", "https"}:
+            remote_tasks.setdefault(value, []).append((publication, field, value))
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, workers)) as executor:
+        future_to_url = {
+            executor.submit(check_remote_url, url, timeout): url
+            for url in sorted(remote_tasks)
+        }
+        for future in concurrent.futures.as_completed(future_to_url):
+            url = future_to_url[future]
+            try:
+                reason = future.result()
+            except Exception as exc:
+                reason = str(exc)
+            if not reason:
+                continue
+            for publication, field, value in remote_tasks[url]:
+                issues.append(
+                    LinkCheckIssue(
+                        row=publication.row_number,
+                        shortconf=publication.get("shortconf"),
+                        title=publication.get("title"),
+                        field=field,
+                        url=value,
+                        reason=reason,
+                    )
+                )
+
+    return sorted(issues, key=lambda issue: (issue.row, issue.field, issue.url))
+
+
 def download_file(url: str, destination: Path, timeout: int) -> None:
     request = urllib.request.Request(
         url,
@@ -520,6 +684,15 @@ def print_link_findings(findings: List[LinkFinding]) -> None:
         )
 
 
+def print_link_check_issues(issues: List[LinkCheckIssue]) -> None:
+    print(f"\nPublication link validity failures: {len(issues)}")
+    for issue in issues:
+        print(
+            f"  - row {issue.row}: {issue.shortconf} | {issue.field} | "
+            f"{issue.url} | {issue.reason}"
+        )
+
+
 def json_report(results: Dict[str, List[AuditItem]]) -> str:
     return json.dumps(
         {key: [asdict(item) for item in items] for key, items in results.items()},
@@ -528,7 +701,7 @@ def json_report(results: Dict[str, List[AuditItem]]) -> str:
     )
 
 
-def pre_commit_check(publications: List[Publication]) -> int:
+def pre_commit_check(publications: List[Publication], link_timeout: int, link_workers: int) -> int:
     staged_files = staged_publication_files()
     if not staged_files:
         print("No staged publication CSV/PDF changes; skipping publication PDF gate.")
@@ -538,17 +711,21 @@ def pre_commit_check(publications: List[Publication]) -> int:
     blocking = blocking_audit_items(results)
     staged_pdfs = {path for path in staged_files if path.suffix.lower() == ".pdf"}
     findings = link_findings(publications, only_paths=staged_pdfs)
+    link_issues = check_publication_links(publications, timeout=link_timeout, workers=link_workers)
 
     print_report(results)
     if staged_pdfs:
         print_link_findings(findings)
+    print_link_check_issues(link_issues)
 
-    if blocking or findings:
+    if blocking or findings or link_issues:
         print("\nPublication PDF gate failed.", file=sys.stderr)
         if blocking:
             print("Fix missing/local/remote/orphan PDF issues before committing.", file=sys.stderr)
         if findings:
             print("Review extracted code/dataset candidates and update static/publications.csv.", file=sys.stderr)
+        if link_issues:
+            print("Fix or replace invalid publication links before committing.", file=sys.stderr)
         return 1
 
     if results["missing_pdf"]:
@@ -563,10 +740,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--json", action="store_true", help="Print machine-readable audit output.")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero if any issue remains.")
     parser.add_argument("--extract-links", action="store_true", help="Scan local PDFs for code/dataset candidate links.")
+    parser.add_argument("--check-links", action="store_true", help="Check all publication links for local existence or remote reachability.")
     parser.add_argument("--pre-commit", action="store_true", help="Run the publication PDF gate for staged changes.")
     parser.add_argument("--download-open", action="store_true", help="Download open direct remote PDFs.")
     parser.add_argument("--write", action="store_true", help="Write CSV changes after downloads.")
     parser.add_argument("--timeout", type=int, default=120, help="Per-download timeout in seconds.")
+    parser.add_argument("--link-timeout", type=int, default=30, help="Per-link timeout in seconds.")
+    parser.add_argument("--link-workers", type=int, default=4, help="Concurrent workers for link checks.")
     return parser.parse_args()
 
 
@@ -575,7 +755,7 @@ def main() -> int:
     publications = read_publications(args.csv)
 
     if args.pre_commit:
-        return pre_commit_check(publications)
+        return pre_commit_check(publications, link_timeout=args.link_timeout, link_workers=args.link_workers)
 
     if args.download_open:
         downloaded, failed = download_open_pdfs(publications, write_csv=args.write, timeout=args.timeout)
@@ -584,17 +764,22 @@ def main() -> int:
         print(f"\nDownloaded open PDFs: {downloaded}; failed: {failed}")
 
     results = audit(publications)
+    link_issues = check_publication_links(publications, args.link_timeout, args.link_workers) if args.check_links else []
     if args.json:
         payload = {key: [asdict(item) for item in items] for key, items in results.items()}
         if args.extract_links:
             payload["link_findings"] = [asdict(item) for item in link_findings(publications)]
+        if args.check_links:
+            payload["link_issues"] = [asdict(item) for item in link_issues]
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         print_report(results)
         if args.extract_links:
             print_link_findings(link_findings(publications))
+        if args.check_links:
+            print_link_check_issues(link_issues)
 
-    if args.strict and any(results.values()):
+    if args.strict and (any(results.values()) or link_issues):
         return 1
     return 0
 
