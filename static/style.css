@@ -366,20 +366,26 @@ h3 {
     margin-bottom: 1rem;
 }
 
-.awards-list {
-    display: grid;
-    gap: 0.85rem;
-}
-
-.award-row {
-    align-items: center;
+.awards-card {
     background-color: #eee8d5;
     border: 1px solid rgba(147, 161, 161, 0.35);
     border-radius: 8px;
+    padding: 1.2rem 1.35rem;
+}
+
+.awards-list {
+    display: grid;
+    gap: 0.95rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.award-row {
+    align-items: baseline;
     display: grid;
     gap: 1rem;
-    grid-template-columns: 5rem 1fr auto;
-    padding: 1rem 1.15rem;
+    grid-template-columns: 5rem 1fr;
 }
 
 .award-year {
@@ -390,7 +396,7 @@ h3 {
     line-height: 1;
 }
 
-.award-body h3 {
+.award-row h3 {
     font-family: 'Roboto', sans-serif;
     font-size: 1.02rem;
     font-weight: 800;
@@ -398,20 +404,9 @@ h3 {
     margin: 0;
 }
 
-.award-body p {
+.award-row p {
     color: #657b83;
     margin: 0.2rem 0 0;
-}
-
-.award-scope {
-    background: rgba(38, 139, 210, 0.12);
-    border: 1px solid rgba(38, 139, 210, 0.2);
-    border-radius: 999px;
-    color: #268bd2;
-    font-size: 0.78rem;
-    font-weight: 800;
-    padding: 0.22rem 0.62rem;
-    white-space: nowrap;
 }
 
 .sponsor-section {
@@ -650,7 +645,7 @@ html.dark-theme .research-item,
 html.dark-theme .research-row,
 html.dark-theme .plain-panel,
 html.dark-theme .person-card,
-html.dark-theme .award-row,
+html.dark-theme .awards-card,
 html.dark-theme .accordion-item,
 html.dark-theme .sponsor-logo {
     background-color: #073642;
@@ -662,14 +657,8 @@ html.dark-theme .person-publication-summary span {
     border-color: rgba(38, 139, 210, 0.24);
 }
 
-html.dark-theme .award-body p {
+html.dark-theme .award-row p {
     color: #93a1a1;
-}
-
-html.dark-theme .award-scope {
-    background: rgba(38, 139, 210, 0.16);
-    border-color: rgba(38, 139, 210, 0.28);
-    color: #5fb3e8;
 }
 
 html.dark-theme .people-join-callout {
@@ -777,10 +766,6 @@ html.dark-theme .text-muted {
     .award-row {
         align-items: flex-start;
         grid-template-columns: 1fr;
-    }
-
-    .award-scope {
-        justify-self: flex-start;
     }
 
     .sponsor-grid {

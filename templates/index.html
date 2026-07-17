@@ -46,11 +46,12 @@
         <div class="section-heading">
             <h2>Awards</h2>
         </div>
-        <div class="awards-list">
+        <div class="awards-card">
+            <ul class="awards-list">
             {% for award in awards %}
-            <article class="award-row">
-                <div class="award-year">{{ award.year }}</div>
-                <div class="award-body">
+            <li class="award-row">
+                <span class="award-year">{{ award.year }}</span>
+                <div>
                     <h3>
                         {% if award.url %}
                         <a href="{{ award.url }}" target="_blank" rel="noopener noreferrer">{{ award.title }}</a>
@@ -62,11 +63,9 @@
                     <p>{{ award.detail }}</p>
                     {% endif %}
                 </div>
-                {% if award.scope %}
-                <span class="award-scope">{{ award.scope }}</span>
-                {% endif %}
-            </article>
+            </li>
             {% endfor %}
+            </ul>
         </div>
     </div>
 </section>
