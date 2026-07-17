@@ -41,35 +41,6 @@
     </div>
 </section>
 
-<section class="section-block awards-section">
-    <div class="container">
-        <div class="section-heading">
-            <h2>Awards</h2>
-        </div>
-        <div class="awards-card">
-            <ul class="awards-list">
-            {% for award in awards %}
-            <li class="award-row">
-                <span class="award-year">{{ award.year }}</span>
-                <div>
-                    <h3>
-                        {% if award.url %}
-                        <a href="{{ award.url }}" target="_blank" rel="noopener noreferrer">{{ award.title }}</a>
-                        {% else %}
-                        {{ award.title }}
-                        {% endif %}
-                    </h3>
-                    {% if award.detail %}
-                    <p>{{ award.detail }}</p>
-                    {% endif %}
-                </div>
-            </li>
-            {% endfor %}
-            </ul>
-        </div>
-    </div>
-</section>
-
 <section class="section-block">
     <div class="container">
         <div class="section-heading">
@@ -101,6 +72,35 @@
                 </div>
             </div>
             {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section-block awards-section">
+    <div class="container">
+        <div class="section-heading">
+            <h2>Awards</h2>
+        </div>
+        <div class="awards-card">
+            <ul class="awards-list">
+            {% for award in awards %}
+            <li class="award-row">
+                <span class="award-year">{{ award.year }}</span>
+                <div>
+                    <h3>
+                        {% if award.url %}
+                        <a href="{{ award.url }}" target="_blank" rel="noopener noreferrer">{{ award.title }}</a>
+                        {% else %}
+                        {{ award.title }}
+                        {% endif %}
+                    </h3>
+                    {% if award.detail %}
+                    <p>{{ award.detail }}</p>
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+            </ul>
         </div>
     </div>
 </section>
