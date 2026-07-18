@@ -12,6 +12,7 @@
     --color-highlight: #dc322f;
     --color-button-bg: #fffaf0;
     --color-subtle-bg: rgba(7, 54, 66, 0.08);
+    --color-member-highlight-bg: rgba(38, 139, 210, 0.14);
     --color-logo-surface: transparent;
 }
 
@@ -26,6 +27,7 @@ html.dark-theme {
     --color-highlight: #ff6b6b;
     --color-button-bg: #002b36;
     --color-subtle-bg: rgba(214, 226, 228, 0.08);
+    --color-member-highlight-bg: rgba(95, 179, 232, 0.18);
     --color-logo-surface: #fdf6e3;
 }
 
@@ -667,9 +669,10 @@ h3 {
 }
 
 .member-author {
-    background: var(--color-subtle-bg);
+    background: var(--color-member-highlight-bg);
+    border: 1px solid var(--color-link);
     border-radius: 5px;
-    color: var(--color-heading);
+    color: var(--color-link);
     font-weight: 800;
     padding: 0.05rem 0.28rem;
 }
