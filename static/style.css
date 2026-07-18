@@ -441,6 +441,15 @@ h3 {
     padding-top: 1rem;
 }
 
+.person-publication-legend {
+    color: var(--color-muted);
+    margin-bottom: 0.85rem;
+}
+
+.person-publication-legend span:not(:first-child) {
+    margin-left: 1rem;
+}
+
 .person-publication-list {
     margin-bottom: 0;
     padding-left: 1.25rem;

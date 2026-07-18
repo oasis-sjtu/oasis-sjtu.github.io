@@ -34,6 +34,10 @@
                     </div>
                     <div class="collapse person-publications" id="{{ member.collapse_id }}">
                         {% if member.publications %}
+                        <p class="person-publication-legend">
+                            <span class="co-first">*</span> Co-first author
+                            <span class="corresponding">#</span> Corresponding author
+                        </p>
                         <ol class="person-publication-list">
                             {% for publication in member.publications %}
                             <li data-shortconf="{{ publication.shortconf or '' }}">
