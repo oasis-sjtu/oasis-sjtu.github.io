@@ -661,11 +661,8 @@ h3 {
 }
 
 .oasis-author {
-    background: var(--color-subtle-bg);
-    border-radius: 5px;
-    color: var(--color-heading);
+    color: var(--color-link);
     font-weight: 700;
-    padding: 0.05rem 0.24rem;
 }
 
 .member-author {

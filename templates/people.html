@@ -46,8 +46,6 @@
                                 {% for author in publication.author_entries %}
                                     {% if author.display|lower == member.name|lower %}
                                         <strong class="member-author">{{ author.display }}</strong>
-                                    {% elif author.is_oasis_member %}
-                                        <strong class="oasis-author">{{ author.display }}</strong>
                                     {% else %}
                                         {{ author.display }}
                                     {% endif %}
