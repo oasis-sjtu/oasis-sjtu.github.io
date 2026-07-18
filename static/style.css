@@ -635,7 +635,7 @@ h3 {
 
 .publication-item > strong,
 .person-publication-list li > strong {
-    color: var(--color-heading);
+    color: var(--color-link);
     font-size: var(--font-card);
 }
 
