@@ -27,7 +27,7 @@
                             {% endfor %}
                         </div>
                         {% endif %}
-                        <button class="btn btn-sm btn-outline-primary person-publication-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#{{ member.collapse_id }}" aria-expanded="false" aria-controls="{{ member.collapse_id }}">
+                        <button class="btn btn-sm utility-button person-publication-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#{{ member.collapse_id }}" aria-expanded="false" aria-controls="{{ member.collapse_id }}">
                             <span>Oasis Publications{% if member.publications %} ({{ member.publications|length }}){% endif %}</span>
                             <i class="fas fa-chevron-down publication-toggle-icon" aria-hidden="true"></i>
                         </button>
@@ -61,22 +61,22 @@
                                 <br>
                                 <span class="publication-links">
                                     {% if publication.url_page %}
-                                        <a href="{{ publication.url_page }}" class="btn btn-sm btn-outline-dark me-1 mt-1" target="_blank" rel="noopener noreferrer">Page</a>
+                                        <a href="{{ publication.url_page }}" class="btn btn-sm publication-link-button me-1 mt-1" target="_blank" rel="noopener noreferrer">Page</a>
                                     {% endif %}
                                     {% if publication.url_pdf %}
-                                        <a href="{{ publication.url_pdf }}" class="btn btn-sm btn-outline-primary me-1 mt-1" target="_blank" rel="noopener noreferrer">PDF</a>
+                                        <a href="{{ publication.url_pdf }}" class="btn btn-sm publication-link-button me-1 mt-1" target="_blank" rel="noopener noreferrer">PDF</a>
                                     {% endif %}
                                     {% if publication.url_video %}
-                                        <a href="{{ publication.url_video }}" class="btn btn-sm btn-outline-secondary me-1 mt-1" target="_blank" rel="noopener noreferrer">Video</a>
+                                        <a href="{{ publication.url_video }}" class="btn btn-sm publication-link-button me-1 mt-1" target="_blank" rel="noopener noreferrer">Video</a>
                                     {% endif %}
                                     {% if publication.url_slides %}
-                                        <a href="{{ publication.url_slides }}" class="btn btn-sm btn-outline-success me-1 mt-1" target="_blank" rel="noopener noreferrer">Slides</a>
+                                        <a href="{{ publication.url_slides }}" class="btn btn-sm publication-link-button me-1 mt-1" target="_blank" rel="noopener noreferrer">Slides</a>
                                     {% endif %}
                                     {% if publication.url_code %}
-                                        <a href="{{ publication.url_code }}" class="btn btn-sm btn-outline-warning me-1 mt-1" target="_blank" rel="noopener noreferrer">Code</a>
+                                        <a href="{{ publication.url_code }}" class="btn btn-sm publication-link-button me-1 mt-1" target="_blank" rel="noopener noreferrer">Code</a>
                                     {% endif %}
                                     {% if publication.url_dataset %}
-                                        <a href="{{ publication.url_dataset }}" class="btn btn-sm btn-outline-info me-1 mt-1" target="_blank" rel="noopener noreferrer">Dataset{% if publication.dataset_downloads_display %} · {{ publication.dataset_downloads_display }} downloads{% endif %}</a>
+                                        <a href="{{ publication.url_dataset }}" class="btn btn-sm publication-link-button me-1 mt-1" target="_blank" rel="noopener noreferrer">Dataset{% if publication.dataset_downloads_display %} · {{ publication.dataset_downloads_display }} downloads{% endif %}</a>
                                     {% endif %}
                                 </span>
                             </li>
