@@ -183,7 +183,7 @@ h3 {
 
 .hero-acronym {
     color: var(--color-text);
-    font-size: var(--font-body);
+    font-size: var(--font-section);
     font-weight: 500;
     line-height: 1.35;
     margin: 0;
