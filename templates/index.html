@@ -60,7 +60,10 @@
                             {% for item in items %}
                             <li class="news-item">
                                 <span class="news-date">{{ item.date }}</span>
-                                {% if item.url %}
+                                {% if item.url and item.link_text and item.link_text in item.text %}
+                                {% set text_parts = item.text.split(item.link_text, 1) %}
+                                <span>{{ text_parts[0] }}<a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.link_text }}</a>{{ text_parts[1] }}</span>
+                                {% elif item.url %}
                                 <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.text }}</a>
                                 {% else %}
                                 <span>{{ item.text }}</span>
