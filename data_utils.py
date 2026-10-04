@@ -74,7 +74,7 @@ def _conference_key(shortconf: Optional[str]) -> Optional[str]:
     if not shortconf:
         return None
     match = re.match(r"([A-Za-z-]+)", shortconf)
-    return match.group(1).upper() if match else None
+    return match.group(1) if match else None
 
 
 def _clean_author_name(author: str) -> str:

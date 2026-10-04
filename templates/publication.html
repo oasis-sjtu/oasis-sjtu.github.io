@@ -6,7 +6,10 @@
     <div class="container">
         <h1 class="visually-hidden">Publications</h1>
         <div id="conference-filter" class="mb-4 p-3 border rounded">
+            <label for="publication-search" class="visually-hidden">Search publications</label>
+            <input id="publication-search" class="form-control form-control-sm publication-search mb-3" type="search" placeholder="Search by title, author, venue or year" autocomplete="off">
             <div id="filter-buttons" class="d-flex flex-wrap gap-2"></div>
+            <p id="filter-status" class="mt-2 mb-0" role="status" aria-live="polite"></p>
         </div>
 
         <p class="text-muted mb-4">
@@ -80,18 +83,69 @@
 {% block scripts %}
 {{ super() }}
 <script>
-let conferenceFilters = {};
-let conferenceCounts = {};
+// Filter state lives in the URL (?conf=OSDI,FAST&q=slow) so a filtered view can be shared.
+const conferenceFilters = {};
+const conferenceCounts = {};
+let searchQuery = '';
+let publicationItems = [];
 
 function extractConferenceName(confString) {
     const match = confString.match(/([A-Z][A-Za-z-]*)'?\d*/);
     return match ? match[1] : null;
 }
 
-function initializeConferenceFilter() {
-    const publications = document.querySelectorAll('.publication-list-global li');
+function buildSearchText(item) {
+    // Searchable text is the title, authors and venue plus the year, without the link buttons.
+    const clone = item.cloneNode(true);
+    clone.querySelectorAll('.publication-links').forEach((node) => node.remove());
+    const section = item.closest('.publication-year');
+    const year = section ? section.dataset.year : '';
+    return (clone.textContent + ' ' + year).replace(/\s+/g, ' ').toLowerCase();
+}
 
-    publications.forEach((pub) => {
+function readStateFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const names = Object.keys(conferenceFilters);
+    if (params.has('conf')) {
+        const wanted = params.get('conf');
+        if (wanted === 'none') {
+            names.forEach((name) => { conferenceFilters[name] = false; });
+        } else {
+            const selected = wanted.split(',').filter((name) => name in conferenceFilters);
+            if (selected.length > 0) {
+                names.forEach((name) => { conferenceFilters[name] = selected.includes(name); });
+            }
+        }
+    }
+    searchQuery = params.get('q') || '';
+    document.getElementById('publication-search').value = searchQuery;
+}
+
+function writeStateToUrl() {
+    const names = Object.keys(conferenceFilters);
+    const active = names.filter((name) => conferenceFilters[name]);
+    const parts = [];
+    if (active.length === 0) {
+        parts.push('conf=none');
+    } else if (active.length !== names.length) {
+        parts.push('conf=' + active.join(','));
+    }
+    if (searchQuery.trim()) {
+        parts.push('q=' + encodeURIComponent(searchQuery.trim()));
+    }
+    const url = window.location.pathname + (parts.length ? '?' + parts.join('&') : '') + window.location.hash;
+    try {
+        window.history.replaceState(null, '', url);
+    } catch (error) {
+        // Some embedded browsers block history changes; the filters still work.
+    }
+}
+
+function initializeConferenceFilter() {
+    publicationItems = Array.from(document.querySelectorAll('.publication-list-global li'));
+
+    publicationItems.forEach((pub) => {
+        pub.dataset.search = buildSearchText(pub);
         const confName = extractConferenceName(pub.dataset.shortconf || '');
         if (!confName) {
             return;
@@ -135,6 +189,12 @@ function initializeConferenceFilter() {
     showNoneBtn.addEventListener('click', showNone);
     filterContainer.appendChild(showNoneBtn);
 
+    document.getElementById('publication-search').addEventListener('input', (event) => {
+        searchQuery = event.target.value;
+        updatePublicationVisibility();
+    });
+
+    readStateFromUrl();
     updatePublicationVisibility();
 }
 
@@ -155,11 +215,18 @@ function showNone() {
 
 function updatePublicationVisibility() {
     const hasActiveFilter = Object.values(conferenceFilters).some(Boolean);
+    const terms = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+    let visibleCount = 0;
 
-    document.querySelectorAll('.publication-list-global li').forEach((pub) => {
+    publicationItems.forEach((pub) => {
         const conf = pub.dataset.conference;
-        const isVisible = conf ? conferenceFilters[conf] : hasActiveFilter;
+        const matchesConference = conf ? conferenceFilters[conf] : hasActiveFilter;
+        const matchesSearch = terms.every((term) => pub.dataset.search.includes(term));
+        const isVisible = matchesConference && matchesSearch;
         pub.classList.toggle('publication-hidden', !isVisible);
+        if (isVisible) {
+            visibleCount += 1;
+        }
     });
 
     document.querySelectorAll('.conf-filter-btn').forEach((btn) => {
@@ -168,10 +235,28 @@ function updatePublicationVisibility() {
         btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
 
+    // Hide empty years and number the visible entries 1..N, so a filtered list never has gaps.
+    let nextNumber = 1;
     document.querySelectorAll('.publication-year').forEach((section) => {
-        const visiblePublications = section.querySelectorAll('li:not(.publication-hidden)');
-        section.classList.toggle('publication-hidden', visiblePublications.length === 0);
+        const visibleInSection = section.querySelectorAll('li:not(.publication-hidden)').length;
+        section.classList.toggle('publication-hidden', visibleInSection === 0);
+        const list = section.querySelector('ol');
+        if (list && visibleInSection > 0) {
+            list.start = nextNumber;
+            nextNumber += visibleInSection;
+        }
     });
+
+    const status = document.getElementById('filter-status');
+    if (visibleCount === publicationItems.length) {
+        status.textContent = '';
+    } else if (visibleCount === 0) {
+        status.textContent = 'No publications match the current filters.';
+    } else {
+        status.textContent = `Showing ${visibleCount} of ${publicationItems.length} publications.`;
+    }
+
+    writeStateToUrl();
 }
 
 document.addEventListener('DOMContentLoaded', initializeConferenceFilter);

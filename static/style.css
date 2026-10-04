@@ -81,10 +81,13 @@
     --color-surface: #eee8d5;
     --color-border: rgba(147, 161, 161, 0.35);
     --color-heading: #073642;
-    --color-text: #586e75;
-    --color-muted: #657b83;
-    --color-link: #268bd2;
-    --color-highlight: #dc322f;
+    /* Contrast (WCAG AA, 4.5:1 for text) is checked against both --color-page and --color-surface. */
+    --color-text: #4c5f65;
+    --color-muted: #56696f;
+    --color-link: #1d6aa0;
+    --color-highlight: #bf2c29;
+    --color-on-link: #fff;
+    --color-on-highlight: #fff;
     --color-button-bg: #fffaf0;
     --color-subtle-bg: rgba(7, 54, 66, 0.08);
     --color-member-highlight-bg: rgba(38, 139, 210, 0.14);
@@ -98,10 +101,12 @@ html.dark-theme {
     --color-surface: #073642;
     --color-border: rgba(88, 110, 117, 0.46);
     --color-heading: #d6e2e4;
-    --color-text: #93a1a1;
-    --color-muted: #839496;
+    --color-text: #94a2a2;
+    --color-muted: #8f9fa0;
     --color-link: #5fb3e8;
     --color-highlight: #ff6b6b;
+    --color-on-link: #002b36;
+    --color-on-highlight: #002b36;
     --color-button-bg: #002b36;
     --color-subtle-bg: rgba(214, 226, 228, 0.08);
     --color-member-highlight-bg: rgba(95, 179, 232, 0.18);
@@ -413,7 +418,7 @@ h3 {
 .filter-action-button:focus {
     background-color: var(--color-link);
     border-color: var(--color-link);
-    color: #fff;
+    color: var(--color-on-link);
 }
 
 .people-group {
@@ -770,11 +775,14 @@ h3 {
     font-weight: 700;
 }
 
+/* More specific than ".person-publication-list li > strong", which colors titles with the link color. */
+.person-publication-list li > strong.member-author,
 .member-author {
     background: var(--color-member-highlight-bg);
     border: 1px solid var(--color-link);
     border-radius: 5px;
-    color: var(--color-link);
+    /* Link blue on its own tinted background is only ~4:1; the accent stays in the border. */
+    color: var(--color-heading);
     font-weight: 800;
     padding: 0.05rem 0.28rem;
 }
@@ -782,6 +790,29 @@ h3 {
 #conference-filter {
     background: var(--color-surface);
     border-color: var(--color-border) !important;
+}
+
+.publication-search {
+    background-color: var(--color-button-bg);
+    border-color: var(--color-border);
+    color: var(--color-heading);
+    font-size: var(--font-body);
+}
+
+.publication-search::placeholder {
+    color: var(--color-muted);
+    opacity: 1;
+}
+
+.publication-search:focus {
+    background-color: var(--color-button-bg);
+    border-color: var(--color-link);
+    color: var(--color-heading);
+}
+
+#filter-status {
+    color: var(--color-muted);
+    min-height: 1.6em;
 }
 
 .conf-filter-btn {
@@ -794,7 +825,7 @@ h3 {
 .conf-filter-btn.active {
     background-color: var(--color-link) !important;
     border-color: var(--color-link) !important;
-    color: #fff !important;
+    color: var(--color-on-link) !important;
 }
 
 .conf-filter-btn:not(.active) {
@@ -805,7 +836,7 @@ h3 {
 
 .badge.bg-danger {
     background-color: var(--color-highlight) !important;
-    color: #fff;
+    color: var(--color-on-highlight);
     font-size: var(--font-body);
 }
 

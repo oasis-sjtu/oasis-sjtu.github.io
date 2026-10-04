@@ -16,16 +16,16 @@ python -m venv venv
 ./venv/bin/python freeze.py
 ```
 
-The generated GitHub Pages site is written to `build/`.
+The generated GitHub Pages site is written to `build/`. Besides the three pages it contains `404.html` (served by GitHub Pages for unknown URLs), `robots.txt` and `sitemap.xml`; the last two are built from `SITE_URL`.
 
 The site's public origin (used for canonical and Open Graph URLs) defaults to `https://oasis-sjtu.github.io`; set the `SITE_URL` environment variable to build for a different domain.
 
 ## Updating content
 
-- People: edit `data/people.csv` (columns: `group, name, role, workplace, interests, photo, email, website, scholar, github, dblp`). Put photos in `static/figures/`, resized to about 640px on the long side; they are shown at roughly 170x210px.
+- People: edit `data/people.csv` (columns: `group, name, role, workplace, interests, photo, email, website, scholar, github, dblp`). Put photos in `static/figures/`, resized to about 640px on the long side; they are shown at roughly 170x210px. For alumni, write the degree and graduation year in `role`, e.g. `PhD Alumnus, 2025`.
 - Research areas: edit `data/research.csv`.
 - News: edit `data/news.csv`.
-- Publications: edit `static/publications.csv`, following the same format as the personal site. The page sorts entries newest first by the `year` column (`YYYY.M`, so `2026.10` is October 2026), so row order in the CSV does not matter. The `authors` column is a Python list literal; the audit below flags rows that fail to parse. Columns, in order: `title, award, authors, year, conference, shortconf, url_pdf, url_code, url_dataset, url_slides, url_video, url_page, url_artifact`; trailing empty columns may be omitted.
+- Publications: edit `static/publications.csv`, following the same format as the personal site. The page sorts entries newest first by the `year` column (`YYYY.M`, so `2026.10` is October 2026), so row order in the CSV does not matter. The `authors` column is a Python list literal; the audit below flags rows that fail to parse. The Publications page has a search box and venue filters; its state is kept in the URL (`?conf=OSDI,FAST&q=slow`), so a filtered view can be shared. Columns, in order: `title, award, authors, year, conference, shortconf, url_pdf, url_code, url_dataset, url_slides, url_video, url_page, url_artifact`; trailing empty columns may be omitted.
 
 Adding or editing publications, PDFs and links follows the workflow in [`AGENTS.md`](AGENTS.md) and [`docs/publication-pdf-workflow.md`](docs/publication-pdf-workflow.md).
 

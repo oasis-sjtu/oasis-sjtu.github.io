@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{# Error pages should not be indexed or have a canonical URL. #}
+{% block seo_links %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<section class="section-block">
+    <div class="container text-center">
+        <h1>Page not found</h1>
+        <p class="mt-3">The page you are looking for does not exist or has moved.</p>
+        <p>
+            <a href="{{ url_for('home') }}">Home</a> &middot;
+            <a href="{{ url_for('people') }}">People</a> &middot;
+            <a href="{{ url_for('publication') }}">Publications</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

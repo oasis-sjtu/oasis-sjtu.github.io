@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, Response, render_template, url_for
 from flask_bootstrap import Bootstrap5
 
 import config
@@ -31,6 +31,30 @@ def inject_site_metadata():
         "site_url": config.SITE_URL,
         "pi_email_display": config.PI_EMAIL_DISPLAY,
     }
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template("404.html", page_title="Page not found"), 404
+
+
+# GitHub Pages serves /404.html for unknown URLs; Frozen-Flask picks these routes up
+# automatically because they take no arguments.
+@app.route("/404.html")
+def not_found_page():
+    return render_template("404.html", page_title="Page not found")
+
+
+@app.route("/robots.txt")
+def robots():
+    body = f"User-agent: *\nAllow: /\n\nSitemap: {config.SITE_URL}/sitemap.xml\n"
+    return Response(body, mimetype="text/plain")
+
+
+@app.route("/sitemap.xml")
+def sitemap():
+    urls = [config.SITE_URL + url_for(endpoint) for endpoint in ("home", "people", "publication")]
+    return Response(render_template("sitemap.xml", urls=urls), mimetype="application/xml")
 
 
 @app.route("/")
