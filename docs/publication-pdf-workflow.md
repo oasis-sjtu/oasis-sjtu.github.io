@@ -87,6 +87,13 @@ Whenever a new PDF is added, run:
 
 If the PDF contains candidate repository or dataset links, make sure `url_code` and `url_dataset` are filled in `static/publications.csv`.
 
+How the scan works, so you know what to trust:
+
+- It reads link annotations and the text inside compressed PDF streams (a plain byte search misses nearly everything in LaTeX PDFs).
+- A GitHub/GitLab link is reported as a candidate when its path matches the paper title or artifact wording, or when the paper text says "available at", "we release", "open-sourced" and similar right before it. Third-party tools such as fio or RocksDB are not reported. GitHub paths containing `data` or `traces` are reported as datasets.
+- It only lists candidates. Read the sentence around the link in the PDF before filling `url_code`/`url_dataset`: a cited prior dataset or a supplementary-material link is not the paper's own artifact.
+- A candidate such as a Zenodo archive can still be listed after the main link is recorded; that is informational.
+
 ## Verification
 
 After changes:

@@ -9,9 +9,11 @@ import sys
 import tempfile
 import urllib.error
 import urllib.request
+import zlib
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Set, Tuple
+from typing import Dict, Iterable, Iterator, List, Optional, Set, Tuple
 from urllib.parse import parse_qs, urlparse
 
 
@@ -69,6 +71,9 @@ STOPWORDS = {
     "with",
 }
 
+# GitHub paths like .../data/offline or .../traces hold datasets, not code.
+DATA_PATH_TOKENS = {"data", "dataset", "datasets", "trace", "traces"}
+
 ARTIFACT_TOKENS = {
     "ae",
     "artifact",
@@ -105,6 +110,29 @@ ANTI_BOT_403_HOSTS = {
 }
 
 URL_PATTERN = re.compile(rb"https?://[^\s<>()\"'{}|\\^\[\]`]+")
+# Clickable targets of hyperlinks live in link annotations: /A << /S /URI /URI (https://...) >>.
+URI_ACTION_PATTERN = re.compile(rb"/URI\s*\(((?:\\.|[^)\\])*)\)", re.DOTALL)
+# "stream" also ends "endstream", so the lookbehind keeps us from treating that as a stream start.
+STREAM_START_PATTERN = re.compile(rb"(?<!end)stream\r?\n")
+MAX_INFLATED_STREAM_BYTES = 4 * 1024 * 1024
+# Streams that hold pixels or font programs never contain URLs or page text; inflating them
+# (hundreds of MB for figure-heavy papers) only makes the scan slow.
+BINARY_STREAM_MARKERS = (b"/Image", b"/Length1", b"/Type1C", b"/CIDFontType0C", b"/OpenType")
+STREAM_DICT_LOOKBACK = 600
+# Bounded so that binary data full of "[" or "(" cannot make the text regexes quadratic.
+TEXT_SHOW_PATTERN = re.compile(
+    rb"\[((?:\\.|[^\]\\]){0,4000})\]\s*TJ|\(((?:\\.|[^)\\]){0,2000})\)\s*Tj", re.DOTALL
+)
+TEXT_STRING_PATTERN = re.compile(rb"\(((?:\\.|[^)\\]){0,2000})\)", re.DOTALL)
+
+# Wording papers use when they point at their own code, data or artifact. Matched against
+# text with whitespace removed, because PDF text extraction drops or adds spaces unreliably.
+RELEASE_CUE_PATTERN = re.compile(
+    r"availableat|availableon|availablefrom|opensourc|open-sourc|wereleas|havereleas|releasedat|"
+    r"publiclyavailable|our(?:code|prototype|implementation|artifact|traces?|dataset|testingpipeline|tool)",
+    re.IGNORECASE,
+)
+RELEASE_CUE_WINDOW = 160
 
 
 @dataclass
@@ -389,16 +417,83 @@ def audit(publications: List[Publication]) -> Dict[str, List[AuditItem]]:
     }
 
 
+def pdf_payloads(data: bytes) -> Iterator[bytes]:
+    """Yield the raw PDF bytes, then every Flate-compressed stream inflated.
+
+    LaTeX and Word PDFs keep link annotations and page text in compressed object and
+    content streams, so scanning the raw bytes alone misses most of the URLs.
+    """
+    yield data
+    for match in STREAM_START_PATTERN.finditer(data):
+        start = match.end()
+        end = data.find(b"endstream", start)
+        if end < 0:
+            continue
+        stream_dict = data[max(0, match.start() - STREAM_DICT_LOOKBACK):match.start()]
+        stream_dict = stream_dict[stream_dict.rfind(b"obj") + 1:]
+        if any(marker in stream_dict for marker in BINARY_STREAM_MARKERS):
+            continue
+        try:
+            yield zlib.decompressobj().decompress(data[start:end], MAX_INFLATED_STREAM_BYTES)
+        except zlib.error:
+            continue  # not Flate (images, fonts, ...) or truncated
+
+
+def clean_pdf_url(raw: str) -> str:
+    raw = re.sub(r"\\(.)", r"\1", raw, flags=re.DOTALL).strip()
+    raw = raw.rstrip(".,;:)]}>")
+    return re.sub(r"\.git$", "", raw)
+
+
+@lru_cache(maxsize=1)
+def inflated_payloads(path: Path) -> Tuple[bytes, ...]:
+    return tuple(pdf_payloads(path.read_bytes()))
+
+
 def extract_urls_from_pdf(path: Path) -> List[str]:
-    data = path.read_bytes()
-    urls = set()
-    for match in URL_PATTERN.finditer(data):
-        raw = match.group(0).decode("latin-1", errors="ignore")
-        raw = raw.replace("\\/", "/").replace("\\)", "").replace("\\(", "")
-        raw = raw.rstrip(".,;:)]}>")
-        if raw:
-            urls.add(raw)
-    return sorted(urls)
+    urls: Set[str] = set()
+    for payload in inflated_payloads(path):
+        for match in URL_PATTERN.finditer(payload):
+            raw = clean_pdf_url(match.group(0).decode("latin-1", errors="ignore"))
+            if raw:
+                urls.add(raw)
+        for match in URI_ACTION_PATTERN.finditer(payload):
+            raw = clean_pdf_url(match.group(1).decode("latin-1", errors="ignore"))
+            if raw.startswith(("http://", "https://")):
+                urls.add(raw)
+    # Plain-text URLs wrapped across lines show up as truncated prefixes of the full link
+    # (e.g. https://github.com/Mas); keep only the longest version.
+    return sorted(url for url in urls if not any(other != url and other.startswith(url) for other in urls))
+
+
+def pdf_text_without_spaces(path: Path) -> str:
+    """Rough page text from TJ/Tj operators with all whitespace removed (lowercased).
+
+    Good enough to ask "does this URL appear next to 'available at' wording?" for the
+    usual LaTeX font encodings; PDFs whose text cannot be read this way just yield "".
+    """
+    pieces: List[str] = []
+    for payload in inflated_payloads(path):
+        if b"TJ" not in payload and b"Tj" not in payload:
+            continue
+        for match in TEXT_SHOW_PATTERN.finditer(payload):
+            if match.group(1) is not None:
+                text = b"".join(m.group(1) for m in TEXT_STRING_PATTERN.finditer(match.group(1)))
+            else:
+                text = match.group(2)
+            pieces.append(text.decode("latin-1"))
+    return re.sub(r"\s+", "", re.sub(r"\\(.)", r"\1", "".join(pieces))).lower()
+
+
+def has_release_cue(url: str, page_text: str) -> bool:
+    """True if the URL is mentioned in the PDF text right after wording like "available at"."""
+    needle = re.sub(r"^https?://(www\.)?", "", url).lower()
+    start = page_text.find(needle)
+    while start != -1:
+        if RELEASE_CUE_PATTERN.search(page_text[max(0, start - RELEASE_CUE_WINDOW):start]):
+            return True
+        start = page_text.find(needle, start + 1)
+    return False
 
 
 def title_tokens(publication: Publication) -> Set[str]:
@@ -458,10 +553,23 @@ def link_findings(publications: List[Publication], only_paths: Optional[Set[Path
         if not pdf_path.exists():
             continue
 
+        page_text: Optional[str] = None
         for url in extract_urls_from_pdf(pdf_path):
             kind = classify_candidate_url(url, publication)
             if not kind:
+                # Repos whose names do not echo the title (e.g. OrderLab/xinda) are still the
+                # paper's own when the text says "available at ..." / "we release ...".
+                parsed_url = urlparse(url)
+                has_repo_path = len([part for part in parsed_url.path.split("/") if part]) >= 2
+                if has_repo_path and parsed_url.netloc.lower().removeprefix("www.") in CODE_HOSTS:
+                    if page_text is None:
+                        page_text = pdf_text_without_spaces(pdf_path)
+                    if has_release_cue(url, page_text):
+                        kind = "code"
+            if not kind:
                 continue
+            if kind == "code" and DATA_PATH_TOKENS & set(re.findall(r"[a-z0-9]+", urlparse(url).path.lower())):
+                kind = "dataset"
 
             field = "url_code" if kind == "code" else "url_dataset"
             csv_value = publication.get(field)
