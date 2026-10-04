@@ -32,11 +32,8 @@
     {% block styles %}
     {{ bootstrap.load_css() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    {# Web fonts load without blocking rendering, so the page stays readable if Google Fonts is slow or unreachable. #}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;700&display=swap" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;700&display=swap"></noscript>
+    <link rel="preload" href="{{ url_for('static', filename='fonts/roboto-latin-400-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ url_for('static', filename='fonts/merriweather-latin-400-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='figures/favicon.png') }}">
     {% endblock %}
 </head>

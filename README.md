@@ -33,4 +33,4 @@ Adding or editing publications, PDFs and links follows the workflow in [`AGENTS.
 
 - GitHub Actions rebuilds and deploys the site on every push to `master` and once a day.
 - Dataset download counts are scraped from Tianchi by `scripts/update_dataset_metrics.py`. The last good values are kept in the Actions cache; if a scrape fails the workflow shows a warning and the site keeps showing the cached counts.
-- Bootstrap is served from the Bootstrap-Flask package, so only the web fonts (Google Fonts) are loaded from a third party, without blocking page rendering.
+- Bootstrap comes from the Bootstrap-Flask package and the Roboto/Merriweather web fonts are self-hosted in `static/fonts/` (Fontsource builds, SIL OFL; license files alongside), so pages load no third-party CSS, JS or fonts. The only third-party content is the Apple Music player on the home page.
