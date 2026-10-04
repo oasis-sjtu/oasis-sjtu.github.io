@@ -2,6 +2,7 @@
 import argparse
 import csv
 import json
+import os
 import re
 import sys
 import time
@@ -154,6 +155,13 @@ def update_metrics(timeout_ms: int, headless: bool) -> int:
 
     if failures:
         print(f"Completed with {failures} dataset refresh failure(s); previous values were preserved.", file=sys.stderr)
+        if os.environ.get("GITHUB_ACTIONS"):
+            # Surface the failure as a workflow annotation; the build still publishes the last known counts.
+            print(
+                f"::warning title=Dataset metrics::{failures} of {len(dataset_ids)} Tianchi dataset(s) "
+                "failed to refresh; the site is using the last cached download counts.",
+                file=sys.stderr,
+            )
     return 0
 
 

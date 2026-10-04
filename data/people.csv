@@ -1,15 +1,15 @@
-group,name,role,workplace,interests,photo,email,website,scholar,github
-Principal Investigator,Guangtao Xue,Distinguished Professor,,"IoT, intelligent sensing, distributed computing systems, data circulation and governance",figures/guangtao-xue.png,gt_xue [at] sjtu [dot] edu [dot] cn,,https://dblp.org/pid/79/1810.html,
-Principal Investigator,Erci Xu,Tenure-track Associate Professor,,"Cloud computing, storage systems, reliability, infrastructure for AI",figures/erci-xu.png,ercixu [at] SJTU [dot] edu [dot] cn,https://giorgioercixu.github.io/,https://scholar.google.com/citations?user=7Yc6A1QAAAAJ,https://github.com/giorgioercixu
-PhD Students,Haonan Wu,PhD Student,Alibaba Group (Intern),"Storage System, LLM inference optimization",figures/haonan-wu.jpg,haonanwu [at] sjtu [dot] edu [dot] cn,,https://scholar.google.com/citations?user=C_D9mf8AAAAJ&hl=zh-CN&oi=sra,https://github.com/Nan-Ge
-PhD Students,Leping Yang,PhD Student,Alibaba Group (Intern),"Storage System, LLM inference optimization",figures/leping-yang.jpg,y.jerry [at] sjtu [dot] edu [dot] cn,,https://scholar.google.com/citations?user=tVDaIc0AAAAJ&hl=zh-CN,https://github.com/Y-Jerry-3988
-PhD Students,Yiming Sun,PhD Student,Ant Group (Intern),Homomorphic Encryption System Design,figures/yiming-sun.jpg,swimmingyeah [at] sjtu [dot] edu [dot] cn,,,https://github.com/swimming572
-PhD Students,Bowen Zhang,PhD Student,Tencent (Intern),"GPU systems, LLM agents, cluster scheduling",figures/bowen-zhang.png,12332423 [at] mail [dot] sustech [dot] edu [dot] cn,,,https://github.com/Css22
-PhD Students,Boyi Jia,PhD Student,Alibaba Group (Intern),LLM pretrain/RL framework analysis,figures/boyi-jia.jpg,ap0stader [at] outlook [dot] com,,,https://github.com/ap0stader
-PhD Students,Zeyuan Ding,PhD Student,Huawei (Intern),"Workload Prediction, Cluster Scheduling, Silent Data Corruption",figures/zeyuan-ding.jpg,boris1013 [at] sjtu [dot] edu [dot] cn,,,
-PhD Students,Yuehai Wang,PhD Student,Xiaohongshu Inc (Intern),"Storage System, infrastructure for AI",figures/yuehai-wang.jpg,yuehaiw [at] sjtu [dot] edu [dot] cn,,,
-MS Students,Yixin Liu,MS Student,Alibaba Group (Intern),infrastructure for AI,figures/yixin-liu.jpg,louise_l [at] sjtu [dot] edu [dot] cn,,,
-MS Students,Rongtao Dong,MS Student,Huawei (Intern),infrastructure for AI,figures/rongtao-dong.jpg,dongrongtao [at] sjtu [dot] edu [dot] cn,,,
-MS Students,Xun Chen,MS Student,Alibaba Group (Intern),Storage System,figures/xun-chen.jpg,3099756105 [at] qq [dot] com,,,https://github.com/chenbxun
-Alumni,Xinqi Chen,Alumnus,ByteDance,"Storage System, Scheduling",figures/xinqi-chen.jpg,chenxq66 [at] sjtu [dot] edu [dot] cn,https://master-chen-xin-qi.github.io/,https://scholar.google.com.hk/citations?hl=zh-CN&user=9drdM-kAAAAJ,https://github.com/Master-Chen-Xin-Qi
-Alumni,Ruiming Lu,Alumnus,Tencent,AI Infra,figures/ruiming-lu.png,ruiming_lu [at] outlook [dot] com,https://ruiming-lu.github.io/,https://scholar.google.com/citations?user=7r9i8AQAAAAJ&,https://github.com/ruiming-lu
+group,name,role,workplace,interests,photo,email,website,scholar,github,dblp
+Principal Investigator,Guangtao Xue,Distinguished Professor,,"IoT, intelligent sensing, distributed computing systems, data circulation and governance",figures/guangtao-xue.jpg,gt_xue [at] sjtu [dot] edu [dot] cn,,,,https://dblp.org/pid/79/1810.html
+Principal Investigator,Erci Xu,Tenure-track Associate Professor,,"Cloud computing, storage systems, reliability, infrastructure for AI",figures/erci-xu.png,ercixu [at] SJTU [dot] edu [dot] cn,https://giorgioercixu.github.io/,https://scholar.google.com/citations?user=7Yc6A1QAAAAJ,https://github.com/giorgioercixu,
+PhD Students,Haonan Wu,PhD Student,Alibaba Group (Intern),"Storage System, LLM inference optimization",figures/haonan-wu.jpg,haonanwu [at] sjtu [dot] edu [dot] cn,,https://scholar.google.com/citations?user=C_D9mf8AAAAJ&hl=zh-CN&oi=sra,https://github.com/Nan-Ge,
+PhD Students,Leping Yang,PhD Student,Alibaba Group (Intern),"Storage System, LLM inference optimization",figures/leping-yang.jpg,y.jerry [at] sjtu [dot] edu [dot] cn,,https://scholar.google.com/citations?user=tVDaIc0AAAAJ&hl=zh-CN,https://github.com/Y-Jerry-3988,
+PhD Students,Yiming Sun,PhD Student,Ant Group (Intern),Homomorphic Encryption System Design,figures/yiming-sun.jpg,swimmingyeah [at] sjtu [dot] edu [dot] cn,,,https://github.com/swimming572,
+PhD Students,Bowen Zhang,PhD Student,Tencent (Intern),"GPU systems, LLM agents, cluster scheduling",figures/bowen-zhang.jpg,12332423 [at] mail [dot] sustech [dot] edu [dot] cn,,,https://github.com/Css22,
+PhD Students,Boyi Jia,PhD Student,Alibaba Group (Intern),LLM pretrain/RL framework analysis,figures/boyi-jia.jpg,ap0stader [at] outlook [dot] com,,,https://github.com/ap0stader,
+PhD Students,Zeyuan Ding,PhD Student,Huawei (Intern),"Workload Prediction, Cluster Scheduling, Silent Data Corruption",figures/zeyuan-ding.jpg,boris1013 [at] sjtu [dot] edu [dot] cn,,,,
+PhD Students,Yuehai Wang,PhD Student,Xiaohongshu Inc (Intern),"Storage System, infrastructure for AI",figures/yuehai-wang.jpg,yuehaiw [at] sjtu [dot] edu [dot] cn,,,,
+MS Students,Yixin Liu,MS Student,Alibaba Group (Intern),infrastructure for AI,figures/yixin-liu.jpg,louise_l [at] sjtu [dot] edu [dot] cn,,,,
+MS Students,Rongtao Dong,MS Student,Huawei (Intern),infrastructure for AI,figures/rongtao-dong.jpg,dongrongtao [at] sjtu [dot] edu [dot] cn,,,,
+MS Students,Xun Chen,MS Student,Alibaba Group (Intern),Storage System,figures/xun-chen.jpg,3099756105 [at] qq [dot] com,,,https://github.com/chenbxun,
+Alumni,Xinqi Chen,Alumnus,ByteDance,"Storage System, Scheduling",figures/xinqi-chen.jpg,chenxq66 [at] sjtu [dot] edu [dot] cn,https://master-chen-xin-qi.github.io/,https://scholar.google.com.hk/citations?hl=zh-CN&user=9drdM-kAAAAJ,https://github.com/Master-Chen-Xin-Qi,
+Alumni,Ruiming Lu,Alumnus,Tencent,AI Infra,figures/ruiming-lu.jpg,ruiming_lu [at] outlook [dot] com,https://ruiming-lu.github.io/,https://scholar.google.com/citations?user=7r9i8AQAAAAJ&,https://github.com/ruiming-lu,

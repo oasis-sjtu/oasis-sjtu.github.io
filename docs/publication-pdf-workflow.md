@@ -29,6 +29,7 @@ The report groups papers into:
 - `Needs logged-in browser`: ACM/IEEE-style page that needs a signed-in Chrome session.
 - `No PDF known yet`: no PDF URL or known publisher download page.
 - `Orphan local PDF`: file exists in `static/papers/` but is not referenced by CSV.
+- `Author list not parseable`: the `authors` column is not a valid Python list of names, so the site would render the paper without authors.
 
 For CI-style checks:
 

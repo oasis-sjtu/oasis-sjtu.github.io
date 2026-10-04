@@ -14,6 +14,8 @@
     --color-subtle-bg: rgba(7, 54, 66, 0.08);
     --color-member-highlight-bg: rgba(38, 139, 210, 0.14);
     --color-logo-surface: transparent;
+    --font-sans: 'Roboto', system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-serif: 'Merriweather', Georgia, 'Songti SC', 'SimSun', serif;
 }
 
 html.dark-theme {
@@ -35,7 +37,7 @@ body,
 html {
     background-color: var(--color-page);
     color: var(--color-text);
-    font-family: 'Roboto', sans-serif;
+    font-family: var(--font-sans);
     font-size: var(--font-body);
     line-height: 1.6;
 }
@@ -72,6 +74,19 @@ a {
 .navbar-dark .navbar-nav .nav-link:focus,
 .navbar-dark .navbar-nav .nav-link.active {
     color: var(--color-link);
+}
+
+.navbar-toggler {
+    border-color: var(--color-border);
+    color: var(--color-heading);
+}
+
+/* Bootstrap's navbar-dark hamburger is white, which vanishes on this light navbar. */
+.navbar-toggler-icon {
+    background-color: currentColor;
+    background-image: none;
+    -webkit-mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23000' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") center / 100% no-repeat;
+    mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23000' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") center / 100% no-repeat;
 }
 
 .theme-switcher {
@@ -116,7 +131,7 @@ h1,
 h2,
 h3 {
     color: var(--color-heading);
-    font-family: 'Merriweather', serif;
+    font-family: var(--font-serif);
     letter-spacing: 0;
 }
 
@@ -183,6 +198,7 @@ h3 {
 
 .hero-acronym {
     color: var(--color-text);
+    font-family: var(--font-sans);
     font-size: var(--font-section);
     font-weight: 500;
     line-height: 1.35;
@@ -379,7 +395,7 @@ h3 {
     width: 168px;
 }
 
-.person-card img[src$="bowen-zhang.png"] {
+.person-card img[src$="bowen-zhang.jpg"] {
     object-position: center 58%;
 }
 
@@ -390,7 +406,7 @@ h3 {
 
 .person-workplace {
     color: var(--color-muted);
-    font-family: 'Roboto', sans-serif;
+    font-family: var(--font-sans);
     font-size: var(--font-body);
     font-weight: 700;
 }
@@ -427,6 +443,7 @@ h3 {
 }
 
 .publication-toggle-icon {
+    flex: none;
     font-size: var(--font-body);
     transition: transform 0.18s ease;
 }
@@ -483,14 +500,14 @@ h3 {
 
 .award-year {
     color: var(--color-muted);
-    font-family: 'Merriweather', serif;
+    font-family: var(--font-serif);
     font-size: var(--font-card);
     font-weight: 700;
     line-height: 1;
 }
 
 .award-row h3 {
-    font-family: 'Roboto', sans-serif;
+    font-family: var(--font-sans);
     font-size: var(--font-card);
     font-weight: 800;
     line-height: 1.35;
@@ -604,14 +621,18 @@ h3 {
     font-weight: 700;
 }
 
-.blur-text {
-    filter: blur(0.18rem);
-    transition: filter 0.2s ease;
-}
+/* Emails are blurred as light anti-scraping, but only where a pointer can hover to reveal them.
+   Touch devices have no hover, so the address would be unreadable there. */
+@media (hover: hover) {
+    .blur-text {
+        filter: blur(0.18rem);
+        transition: filter 0.2s ease;
+    }
 
-.blur-text:hover,
-.blur-text:focus {
-    filter: blur(0);
+    .blur-text:hover,
+    .blur-text:focus {
+        filter: blur(0);
+    }
 }
 
 .accordion-item {
@@ -736,6 +757,7 @@ html.dark-theme h3 {
     color: var(--color-heading);
 }
 
+html.dark-theme .hero-acronym,
 html.dark-theme .hero-copy,
 html.dark-theme .page-header p,
 html.dark-theme .publication-item,

@@ -7,9 +7,9 @@
             <div class="lab-mark" aria-hidden="true">
                 <img src="{{ url_for('static', filename='figures/oasis-wordmark.png') }}" alt="">
             </div>
-            <p class="hero-acronym" aria-label="Operating And Storage Infrastructure System Lab">
+            <h1 class="hero-acronym" aria-label="Operating And Storage Infrastructure System Lab">
                 <span>O</span>perating <span>A</span>nd <span>S</span>torage <span>I</span>nfrastructure <span>S</span>ystem Lab
-            </p>
+            </h1>
         </div>
     </div>
 </section>
@@ -132,6 +132,7 @@
             id="oasis-apple-music-player"
             class="apple-music-player"
             title="Apple Music player for Live Forever by Oasis"
+            loading="lazy"
             allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
             sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
             src="https://embed.music.apple.com/us/album/live-forever/1517506402?i=1517506707">
@@ -193,12 +194,22 @@
             const randomNumber = window.crypto && window.crypto.getRandomValues
                 ? window.crypto.getRandomValues(randomValues)[0]
                 : Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-            const previousIndex = Number.parseInt(sessionStorage.getItem('lastOasisSongIndex'), 10);
+            // sessionStorage can throw (blocked storage, some private modes); the song just won't be de-duplicated then.
+            let previousIndex = NaN;
+            try {
+                previousIndex = Number.parseInt(sessionStorage.getItem('lastOasisSongIndex'), 10);
+            } catch (error) {
+                previousIndex = NaN;
+            }
             let songIndex = randomNumber % oasisSongs.length;
             if (songIndex === previousIndex) {
                 songIndex = (songIndex + 1) % oasisSongs.length;
             }
-            sessionStorage.setItem('lastOasisSongIndex', String(songIndex));
+            try {
+                sessionStorage.setItem('lastOasisSongIndex', String(songIndex));
+            } catch (error) {
+                // Ignore: remembering the last song is optional.
+            }
             const song = oasisSongs[songIndex];
             recommendationNode.innerHTML = `Need some inspiration? Maybe listen to <cite>${song.title}</cite> from Oasis' <cite>${song.album}</cite>, enjoy!`;
             if (playerNode) {

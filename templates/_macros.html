@@ -1,0 +1,25 @@
+{#
+    Render a publication's author list.
+
+    Pass `member_name` to highlight a single person (People page); otherwise every
+    Oasis Lab member is highlighted (Publications page). Whitespace is trimmed so
+    the */# markers and commas attach to the name instead of floating after a space.
+#}
+{% macro authors(entries, member_name=None) -%}
+{%- for author in entries -%}
+    {%- if member_name is not none -%}
+        {%- if author.display|lower == member_name|lower -%}
+            <strong class="member-author">{{ author.display }}</strong>
+        {%- else -%}
+            {{ author.display }}
+        {%- endif -%}
+    {%- elif author.is_oasis_member -%}
+        <strong class="oasis-author">{{ author.display }}</strong>
+    {%- else -%}
+        {{ author.display }}
+    {%- endif -%}
+    {%- if author.is_co_first %}<span class="co-first">*</span>{% endif -%}
+    {%- if author.is_corresponding %}<span class="corresponding">#</span>{% endif -%}
+    {%- if not loop.last %}, {% endif -%}
+{%- endfor -%}
+{%- endmacro %}

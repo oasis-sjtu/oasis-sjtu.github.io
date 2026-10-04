@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
+{% from '_macros.html' import authors %}
 
 {% block content %}
 <section class="section-block">
     <div class="container">
+        <h1 class="visually-hidden">Publications</h1>
         <div id="conference-filter" class="mb-4 p-3 border rounded">
             <div id="filter-buttons" class="d-flex flex-wrap gap-2"></div>
         </div>
@@ -35,16 +37,7 @@
                                 {% endif %}
                                 <br>
                                 <span class="text-muted">by</span>
-                                {% for author in publication.author_entries %}
-                                    {% if author.is_oasis_member %}
-                                        <strong class="oasis-author">{{ author.display }}</strong>
-                                    {% else %}
-                                        {{ author.display }}
-                                    {% endif %}
-                                    {% if author.is_co_first %}<span class="co-first">*</span>{% endif %}
-                                    {% if author.is_corresponding %}<span class="corresponding">#</span>{% endif %}
-                                    {% if not loop.last %}, {% endif %}
-                                {% endfor %}
+                                {{ authors(publication.author_entries) }}
                                 <br>
                                 <em>{{ publication.conference }}</em>, {{ publication.shortconf }}.
                                 <br>

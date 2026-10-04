@@ -28,7 +28,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'  # Set to your required Python version
+          python-version: '3.12'
+          cache: pip
 
       - name: Install Dependencies
         run: |
@@ -37,7 +38,20 @@ jobs:
           python -m pip install playwright
           python -m playwright install --with-deps chromium
 
+      # static/dataset_metrics.json is not committed with data, so keep the last good
+      # download counts in the Actions cache. Without this, a failed Tianchi scrape would
+      # silently drop every count from the published site.
+      - name: Restore Dataset Metrics Cache
+        uses: actions/cache@v4
+        with:
+          path: static/dataset_metrics.json
+          key: dataset-metrics-${{ github.run_id }}
+          restore-keys: |
+            dataset-metrics-
+
+      # Download counts are a nice-to-have: never block publishing the site on them.
       - name: Update Dataset Metrics
+        continue-on-error: true
         run: |
           python scripts/update_dataset_metrics.py
 

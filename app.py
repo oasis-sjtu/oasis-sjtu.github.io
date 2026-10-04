@@ -12,6 +12,11 @@ from data_utils import (
 )
 
 app = Flask(__name__)
+# Serve Bootstrap from the Bootstrap-Flask package instead of a public CDN.
+app.config["BOOTSTRAP_SERVE_LOCAL"] = True
+# The package also ships Bootswatch themes, Sass sources, source maps and unused
+# helpers; keep them out of the frozen site (they add ~15 MB).
+app.config["FREEZER_STATIC_IGNORE"] = ["bootswatch", "umd", "icons", "*.map", "*.scss", "bootstrap.css"]
 bootstrap = Bootstrap5(app)
 
 
@@ -23,10 +28,8 @@ def inject_site_metadata():
         "navbar_title": config.NAVBAR_TITLE,
         "copyright_year": config.COPYRIGHT_YEAR,
         "copyright_text": config.COPYRIGHT_TEXT,
-        "github_url": config.GITHUB_URL,
-        "scholar_url": config.SCHOLAR_URL,
+        "site_url": config.SITE_URL,
         "pi_email_display": config.PI_EMAIL_DISPLAY,
-        "personal_site_url": config.PERSONAL_SITE_URL,
     }
 
 

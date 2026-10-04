@@ -9,9 +9,9 @@
     <meta property="og:title" content="{% if page_title %}{{ page_title }} | {{ site_title }}{% else %}{{ site_title }}{% endif %}">
     <meta property="og:description" content="{{ site_description }}">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="{{ url_for('static', filename='figures/oasis-wordmark.png', _external=True) }}">
+    <meta property="og:image" content="{{ site_url }}{{ url_for('static', filename='figures/oasis-wordmark.png') }}">
     <meta name="twitter:card" content="summary">
-    <link rel="canonical" href="{{ request.url }}">
+    <link rel="canonical" href="{{ site_url }}{{ request.path }}">
     <script>
         (function () {
             const validThemeModes = ['auto', 'light', 'dark'];
@@ -32,8 +32,11 @@
     {% block styles %}
     {{ bootstrap.load_css() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    {# Web fonts load without blocking rendering, so the page stays readable if Google Fonts is slow or unreachable. #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;700&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;700&display=swap"></noscript>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='figures/favicon.png') }}">
     {% endblock %}
 </head>
@@ -74,7 +77,7 @@
     </footer>
 
     {% block scripts %}
-    {{ bootstrap.load_js() }}
+    {{ bootstrap.load_js(with_popper=False) }}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const root = document.documentElement;

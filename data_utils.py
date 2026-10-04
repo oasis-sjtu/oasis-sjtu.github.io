@@ -1,6 +1,7 @@
 import ast
 import csv
 import json
+import logging
 import re
 from collections import defaultdict
 from functools import lru_cache
@@ -8,6 +9,8 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 import config
+
+logger = logging.getLogger(__name__)
 
 
 def _clean(value: Optional[str]) -> Optional[str]:
@@ -82,10 +85,6 @@ def _author_display_name(author: str) -> str:
     return author.replace("(Co-first)", "").replace("(Corresponding)", "").strip()
 
 
-def _is_template_person(name: str) -> bool:
-    return name.strip().lower().startswith("template ")
-
-
 def _slugify(value: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
     return slug or "member"
@@ -99,7 +98,7 @@ def load_oasis_member_names(filename=None) -> set:
         reader = csv.DictReader(csvfile)
         for person in reader:
             name = (person.get("name") or "").strip()
-            if name and not _is_template_person(name):
+            if name:
                 member_names.add(name.lower())
 
     return member_names
@@ -119,6 +118,15 @@ def _build_author_entries(authors: List[str], oasis_member_names: set) -> List[D
             }
         )
     return entries
+
+
+def _publication_sort_key(publication: Dict[str, Any]) -> tuple:
+    """Sort key from the CSV's ``YYYY.M`` year column (``2026.10`` is October 2026)."""
+    year, _, month = (publication.get("year") or "").partition(".")
+    try:
+        return int(year), int(month or 0)
+    except ValueError:
+        return 0, 0
 
 
 def load_publications(filename=None) -> List[Dict[str, Any]]:
@@ -143,7 +151,7 @@ def load_publications(filename=None) -> List[Dict[str, Any]]:
 
     with open(filename, "r", encoding="utf-8") as csvfile:
         reader = csv.reader(csvfile)
-        for row in reader:
+        for row_number, row in enumerate(reader, 1):
             if not any(cell.strip() for cell in row):
                 continue
             publication = {
@@ -153,7 +161,16 @@ def load_publications(filename=None) -> List[Dict[str, Any]]:
             try:
                 publication["authors"] = ast.literal_eval(publication["authors"] or "[]")
             except (ValueError, SyntaxError):
+                logger.warning(
+                    "%s row %d: cannot parse the authors column, rendering without authors: %s",
+                    filename,
+                    row_number,
+                    publication["title"],
+                )
                 publication["authors"] = []
+            # Venue names are sometimes stored with a trailing period; templates add their own punctuation.
+            if publication["conference"]:
+                publication["conference"] = publication["conference"].rstrip(".")
             publication["author_entries"] = _build_author_entries(
                 publication["authors"],
                 oasis_member_names,
@@ -170,6 +187,9 @@ def load_publications(filename=None) -> List[Dict[str, Any]]:
                     break
             publications.append(publication)
 
+    # Newest first, regardless of the order rows were added to the CSV. Python's sort is
+    # stable, so rows with the same year and month keep their CSV order.
+    publications.sort(key=_publication_sort_key, reverse=True)
     return publications
 
 

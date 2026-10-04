@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import ast
 import concurrent.futures
 import csv
 import json
@@ -296,15 +297,42 @@ def referenced_local_paths(publications: Iterable[Publication]) -> Dict[Path, Pu
     return referenced
 
 
+def author_list_problem(publication: Publication) -> Optional[str]:
+    """Why the authors column would not render, or None. The site parses it as a Python list literal."""
+    raw = publication.get("authors")
+    try:
+        authors = ast.literal_eval(raw) if raw else []
+    except (ValueError, SyntaxError) as exc:
+        return f"authors is not a valid Python list literal ({exc})"
+    if not isinstance(authors, list) or not all(isinstance(author, str) and author.strip() for author in authors):
+        return "authors must be a list of non-empty strings"
+    if not authors:
+        return "authors is empty"
+    return None
+
+
 def audit(publications: List[Publication]) -> Dict[str, List[AuditItem]]:
     local_missing: List[AuditItem] = []
     remote_pdf: List[AuditItem] = []
     missing_pdf: List[AuditItem] = []
     browser_required: List[AuditItem] = []
+    author_parse: List[AuditItem] = []
 
     for publication in publications:
         url_pdf = publication.get("url_pdf")
         title = publication.get("title")
+        author_problem = author_list_problem(publication)
+        if author_problem:
+            author_parse.append(
+                AuditItem(
+                    row=publication.row_number,
+                    shortconf=publication.get("shortconf"),
+                    title=title,
+                    url_pdf=url_pdf,
+                    url_page=publication.get("url_page"),
+                    reason=author_problem,
+                )
+            )
         item = AuditItem(
             row=publication.row_number,
             shortconf=publication.get("shortconf"),
@@ -357,6 +385,7 @@ def audit(publications: List[Publication]) -> Dict[str, List[AuditItem]]:
         "missing_pdf": missing_pdf,
         "browser_required": browser_required,
         "orphan_pdf": orphan_pdf,
+        "author_parse": author_parse,
     }
 
 
@@ -464,7 +493,7 @@ def link_findings(publications: List[Publication], only_paths: Optional[Set[Path
 def blocking_audit_items(results: Dict[str, List[AuditItem]]) -> Dict[str, List[AuditItem]]:
     return {
         key: results[key]
-        for key in ("local_missing", "remote_pdf", "browser_required", "orphan_pdf")
+        for key in ("local_missing", "remote_pdf", "browser_required", "orphan_pdf", "author_parse")
         if results[key]
     }
 
@@ -644,6 +673,7 @@ def print_report(results: Dict[str, List[AuditItem]]) -> None:
         ("browser_required", "Needs logged-in browser"),
         ("missing_pdf", "No PDF known yet"),
         ("orphan_pdf", "Orphan local PDF"),
+        ("author_parse", "Author list not parseable"),
     ]
     for key, label in labels:
         items = results[key]
@@ -652,7 +682,8 @@ def print_report(results: Dict[str, List[AuditItem]]) -> None:
             location = f"row {item.row}" if item.row else "file"
             suggested = f" -> suggested {item.suggested_file}" if item.suggested_file else ""
             source = f" [{item.download_url}]" if item.download_url else ""
-            print(f"  - {location}: {item.shortconf} | {item.title}{suggested}{source}")
+            reason = f" ({item.reason})" if key == "author_parse" and item.reason else ""
+            print(f"  - {location}: {item.shortconf} | {item.title}{suggested}{source}{reason}")
 
 
 def print_link_findings(findings: List[LinkFinding]) -> None:

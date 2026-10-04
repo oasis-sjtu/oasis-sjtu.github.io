@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
+{% from '_macros.html' import authors %}
 
 {% block content %}
 <section class="section-block">
     <div class="container">
+        <h1 class="visually-hidden">People</h1>
         {% for group, members in people.items() %}
         <div class="people-group">
             <h2>{{ group }}</h2>
@@ -15,9 +17,10 @@
                         <p class="person-role">{{ member.role }}</p>
                         <p>{{ member.interests }}</p>
                         <div class="person-links">
-                            {% if member.email %}<span class="blur-text">{{ member.email }}</span>{% endif %}
+                            {% if member.email %}<span class="blur-text" tabindex="0">{{ member.email }}</span>{% endif %}
                             {% if member.website %}<a href="{{ member.website }}" target="_blank" rel="noopener noreferrer">Website</a>{% endif %}
                             {% if member.scholar %}<a href="{{ member.scholar }}" target="_blank" rel="noopener noreferrer">Scholar</a>{% endif %}
+                            {% if member.dblp %}<a href="{{ member.dblp }}" target="_blank" rel="noopener noreferrer">DBLP</a>{% endif %}
                             {% if member.github %}<a href="{{ member.github }}" target="_blank" rel="noopener noreferrer">GitHub</a>{% endif %}
                         </div>
                         {% if member.publication_summary %}
@@ -29,7 +32,7 @@
                         {% endif %}
                         <button class="btn btn-sm utility-button person-publication-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#{{ member.collapse_id }}" aria-expanded="false" aria-controls="{{ member.collapse_id }}">
                             <span>Oasis Publications{% if member.publications %} ({{ member.publications|length }}){% endif %}</span>
-                            <i class="fas fa-chevron-down publication-toggle-icon" aria-hidden="true"></i>
+                            <svg class="publication-toggle-icon" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
                         </button>
                     </div>
                     <div class="collapse person-publications" id="{{ member.collapse_id }}">
@@ -47,16 +50,7 @@
                                 {% endif %}
                                 <br>
                                 <span class="text-muted">by</span>
-                                {% for author in publication.author_entries %}
-                                    {% if author.display|lower == member.name|lower %}
-                                        <strong class="member-author">{{ author.display }}</strong>
-                                    {% else %}
-                                        {{ author.display }}
-                                    {% endif %}
-                                    {% if author.is_co_first %}<span class="co-first">*</span>{% endif %}
-                                    {% if author.is_corresponding %}<span class="corresponding">#</span>{% endif %}
-                                    {% if not loop.last %}, {% endif %}
-                                {% endfor %}
+                                {{ authors(publication.author_entries, member.name) }}
                                 <br>
                                 <em>{{ publication.shortconf }}</em>
                                 {% if publication.conference %}<span class="text-muted"> - {{ publication.conference }}</span>{% endif %}
@@ -101,7 +95,7 @@
             </p>
             <p>
                 Please send a brief introduction, CV, transcript if available, and a short note about which research direction
-                you would like to explore to <span class="blur-text">{{ pi_email_display }}</span>.
+                you would like to explore to <span class="blur-text" tabindex="0">{{ pi_email_display }}</span>.
             </p>
         </div>
         {% endif %}

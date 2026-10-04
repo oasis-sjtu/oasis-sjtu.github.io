@@ -30,7 +30,7 @@ SITE_DESCRIPTION = (
 COPYRIGHT_YEAR = str(datetime.now().year)
 COPYRIGHT_TEXT = "Oasis Lab, Shanghai Jiao Tong University"
 
-GITHUB_URL = "https://github.com/giorgioercixu"
-SCHOLAR_URL = "https://scholar.google.com/citations?user=7Yc6A1QAAAAJ"
+# Public origin of the deployed site, used for canonical and Open Graph URLs.
+SITE_URL = os.getenv("SITE_URL", "https://oasis-sjtu.github.io").rstrip("/")
+
 PI_EMAIL_DISPLAY = "ercixu [at] SJTU [dot] edu [dot] cn"
-PERSONAL_SITE_URL = "https://giorgioercixu.github.io/"
