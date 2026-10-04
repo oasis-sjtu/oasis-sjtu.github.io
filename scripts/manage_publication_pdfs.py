@@ -35,6 +35,7 @@ FIELDNAMES = [
     "url_slides",
     "url_video",
     "url_page",
+    "url_artifact",
 ]
 
 PUBLICATION_LINK_FIELDS = [
@@ -44,6 +45,7 @@ PUBLICATION_LINK_FIELDS = [
     "url_slides",
     "url_video",
     "url_page",
+    "url_artifact",
 ]
 
 OPEN_PDF_HOSTS = {
@@ -107,6 +109,7 @@ ANTI_BOT_403_HOSTS = {
     "doi.org",
     "dl.acm.org",
     "ieeexplore.ieee.org",
+    "zenodo.org",
 }
 
 URL_PATTERN = re.compile(rb"https?://[^\s<>()\"'{}|\\^\[\]`]+")
@@ -570,6 +573,9 @@ def link_findings(publications: List[Publication], only_paths: Optional[Set[Path
                 continue
             if kind == "code" and DATA_PATH_TOKENS & set(re.findall(r"[a-z0-9]+", urlparse(url).path.lower())):
                 kind = "dataset"
+
+            if is_recorded(url, publication.get("url_artifact")):
+                continue
 
             field = "url_code" if kind == "code" else "url_dataset"
             csv_value = publication.get(field)

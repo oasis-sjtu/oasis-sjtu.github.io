@@ -146,6 +146,7 @@ def load_publications(filename=None) -> List[Dict[str, Any]]:
         "url_slides",
         "url_video",
         "url_page",
+        "url_artifact",
     ]
     publications: List[Dict[str, Any]] = []
 

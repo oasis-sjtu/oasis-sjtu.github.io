@@ -10,7 +10,7 @@ When adding or editing publications:
 2. Add `url_page` whenever an official paper, DOI, conference, ACM, IEEE, USENIX, or author page is available. It is not mandatory before a page exists.
 3. Once a downloadable camera-ready or public PDF exists, download it by default and host it in `static/papers/`, referenced as `../static/papers/<file>.pdf`.
 4. For ACM/IEEE publisher PDFs, use the user's logged-in Chrome session when needed. If access fails, ask the user to sign in to ACM DL / IEEE Xplore / SJTU access and retry.
-5. Do not infer `url_code` or `url_dataset` from general web search. Only fill them from links extracted from the paper PDF itself.
+5. Do not infer `url_code`, `url_dataset` or `url_artifact` from general web search. Only fill them from links extracted from the paper PDF itself. `url_artifact` (the last column) is for an artifact-evaluation archive the paper links, e.g. a Zenodo record; keep the GitHub repo in `url_code` and the data in `url_dataset`.
 6. If adding a PDF, scan it for repository and dataset candidates:
 
    ```sh

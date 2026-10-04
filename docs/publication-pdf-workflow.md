@@ -64,6 +64,7 @@ If access fails, ask the user to sign in to ACM DL / IEEE Xplore / SJTU access i
 - `url_page`: fill it whenever an official paper, DOI, conference, ACM, IEEE, USENIX, or author page is available. It is not mandatory before one exists.
 - `url_pdf`: once a PDF can be downloaded, host it locally in `static/papers/`.
 - `url_code` and `url_dataset`: only fill these from links extracted from the paper PDF. Do not use general web search to guess repositories or datasets.
+- `url_artifact` (13th and last column, shown as an "Artifact" button): an artifact-evaluation archive linked from the paper, typically a Zenodo record. Same rule as above: only from the PDF. Rows without it may simply stop after `url_page`.
 - `url_video` and `url_slides`: check the publication being added or edited and fill them when official pages expose them.
 - Link failures: 404 and missing local files must be fixed. 403/timeout caused by anti-bot behavior may pass after browser verification.
 

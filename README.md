@@ -25,7 +25,7 @@ The site's public origin (used for canonical and Open Graph URLs) defaults to `h
 - People: edit `data/people.csv` (columns: `group, name, role, workplace, interests, photo, email, website, scholar, github, dblp`). Put photos in `static/figures/`, resized to about 640px on the long side; they are shown at roughly 170x210px.
 - Research areas: edit `data/research.csv`.
 - News: edit `data/news.csv`.
-- Publications: edit `static/publications.csv`, following the same format as the personal site. The page sorts entries newest first by the `year` column (`YYYY.M`, so `2026.10` is October 2026), so row order in the CSV does not matter. The `authors` column is a Python list literal; the audit below flags rows that fail to parse.
+- Publications: edit `static/publications.csv`, following the same format as the personal site. The page sorts entries newest first by the `year` column (`YYYY.M`, so `2026.10` is October 2026), so row order in the CSV does not matter. The `authors` column is a Python list literal; the audit below flags rows that fail to parse. Columns, in order: `title, award, authors, year, conference, shortconf, url_pdf, url_code, url_dataset, url_slides, url_video, url_page, url_artifact`; trailing empty columns may be omitted.
 
 Adding or editing publications, PDFs and links follows the workflow in [`AGENTS.md`](AGENTS.md) and [`docs/publication-pdf-workflow.md`](docs/publication-pdf-workflow.md).
 
