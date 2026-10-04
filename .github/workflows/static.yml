@@ -19,14 +19,16 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moves to Ubuntu 26 on 2026-10-19, and the Playwright system
+    # dependencies are not guaranteed to install there. Bump deliberately after testing.
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12'
           cache: pip
@@ -35,35 +37,42 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r ./requirements.txt
-          python -m pip install playwright
-          python -m playwright install --with-deps chromium
 
       # static/dataset_metrics.json is not committed with data, so keep the last good
       # download counts in the Actions cache. Without this, a failed Tianchi scrape would
       # silently drop every count from the published site.
       - name: Restore Dataset Metrics Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: static/dataset_metrics.json
           key: dataset-metrics-${{ github.run_id }}
           restore-keys: |
             dataset-metrics-
 
-      # Download counts are a nice-to-have: never block publishing the site on them.
+      # Download counts are a nice-to-have: never block publishing the site on them. That
+      # includes installing Playwright and Chromium, which is why it happens in this step.
       - name: Update Dataset Metrics
         continue-on-error: true
         run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
           python scripts/update_dataset_metrics.py
+
+      # Fail the build instead of publishing a site with unparseable author lists or
+      # papers whose local PDF is missing.
+      - name: Validate Publication Data
+        run: |
+          python scripts/manage_publication_pdfs.py --validate
 
       - name: Generate Static Files
         run: |
           python freeze.py
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload GitHub Pages Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./build
 
@@ -71,10 +80,10 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build
 
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

@@ -31,6 +31,8 @@ The report groups papers into:
 - `Orphan local PDF`: file exists in `static/papers/` but is not referenced by CSV.
 - `Author list not parseable`: the `authors` column is not a valid Python list of names, so the site would render the paper without authors.
 
+`--validate` is the gate used by the deploy workflow. It exits non-zero only for problems that would break the published site (unparseable author lists, missing local PDFs), so unreleased papers without a PDF do not block deployment.
+
 For CI-style checks:
 
 ```sh

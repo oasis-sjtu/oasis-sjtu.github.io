@@ -31,6 +31,6 @@ Adding or editing publications, PDFs and links follows the workflow in [`AGENTS.
 
 ## Deployment notes
 
-- GitHub Actions rebuilds and deploys the site on every push to `master` and once a day.
+- GitHub Actions rebuilds and deploys the site on every push to `master` and once a day. The build runs `manage_publication_pdfs.py --validate` first and fails if an author list cannot be parsed or a local PDF is missing. The runner is pinned to `ubuntu-24.04`; bump it deliberately after testing.
 - Dataset download counts are scraped from Tianchi by `scripts/update_dataset_metrics.py`. The last good values are kept in the Actions cache; if a scrape fails the workflow shows a warning and the site keeps showing the cached counts.
 - Bootstrap comes from the Bootstrap-Flask package and the Roboto/Merriweather web fonts are self-hosted in `static/fonts/` (Fontsource builds, SIL OFL; license files alongside), so pages load no third-party CSS, JS or fonts. The only third-party content is the Apple Music player on the home page.

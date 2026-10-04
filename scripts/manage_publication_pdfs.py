@@ -832,6 +832,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--csv", type=Path, default=PUBLICATIONS_CSV)
     parser.add_argument("--json", action="store_true", help="Print machine-readable audit output.")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero if any issue remains.")
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Exit non-zero only for problems that would break the published site: unparseable author lists and missing local PDFs.",
+    )
     parser.add_argument("--extract-links", action="store_true", help="Scan local PDFs for code/dataset candidate links.")
     parser.add_argument("--check-links", action="store_true", help="Check all publication links for local existence or remote reachability.")
     parser.add_argument("--download-open", action="store_true", help="Download open direct remote PDFs.")
@@ -869,6 +874,9 @@ def main() -> int:
             print_link_check_issues(link_issues)
 
     if args.strict and (any(results.values()) or link_issues):
+        return 1
+    if args.validate and (results["author_parse"] or results["local_missing"]):
+        print("\nValidation failed: fix the rows above before publishing.", file=sys.stderr)
         return 1
     return 0
 
